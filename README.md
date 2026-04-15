@@ -1,224 +1,116 @@
-# G35 Backend - Manual de Usuario
+# G35 Backend + Neo4j Explorer
 
-## 📋 Descripción del Proyecto
+## Descripción
+Este proyecto modela tecnologias y temas en Neo4j y los expone por API REST con Spring Boot.
 
-**G35 Backend** es una aplicación backend desarrollada con **Spring Boot** que utiliza **Neo4j** como base de datos de grafos. Proporciona una API REST para gestionar y consultar datos relacionales.
+Tambien incluye una interfaz web (servida por el propio backend) para consultar y visualizar el grafo con un panel lateral de resultados, estilo explorador de nodos.
 
+## Contexto de la asignatura CBD
+El proyecto esta orientado a contenidos de la asignatura CBD (Complementos de Bases de Datos), donde se relacionan temas teoricos con tecnologias reales.
 
-## 🛠️ Requisitos Previos
+Temas trabajados en el grafo:
+- Mineria de Datos
+- NoSQL
+- SIG / GIS
+- Blockchain
+- Data Warehouse
+- Bases de Datos Moviles
+- Web Semantica
+- Big Data
+- BBDD Distribuidas
 
-Antes de ejecutar el proyecto, asegúrate de tener instalado:
+Tecnologias modeladas en el grafo (ejemplos):
+- Neo4j
+- Spring Boot
+- MongoDB
+- Redis
+- Apache Spark
+- Apache Jena
+- PostGIS
+- Ethereum
+- Couchbase
+- Snowflake
 
-| Herramienta | Versión | Descargar |
-|------------|---------|----------|
-| **Java JDK** | 17+ | [openjdk.java.net](https://openjdk.java.net/) |
-| **Maven** | 3.6+ | [maven.apache.org](https://maven.apache.org/) |
-| **Neo4j** | 4.0+ | [neo4j.com/download](https://neo4j.com/download/) |
-| **Git** | Cualquier versión | [git-scm.com](https://git-scm.com/) |
+## Stack
+- Java 17+
+- Spring Boot
+- Spring Data Neo4j
+- Neo4j
+- Frontend estatico en `resources/static`
 
-### Verificar instalación:
+## Modelo de datos (resumen)
+- Nodo `Tech`: tecnologia (`nombre`, `categoria`)
+- Nodo `Tema`: tema de la asignatura (`id`, `nombre`)
+- Relacion `VISTO_EN`: `(:Tech)-[:VISTO_EN]->(:Tema)`
+- Relacion `SE_INTEGRA_CON`: `(:Tech)-[:SE_INTEGRA_CON]->(:Tech)`
+
+## Requisitos
+- JDK 17 o superior
+- Maven 3.6+
+- Neo4j corriendo en `bolt://localhost:7687`
+
+## Configuracion local
+1. Crea tu archivo local desde el ejemplo:
+
 ```bash
-java -version
-mvn -version
+# PowerShell
+Copy-Item backend/src/main/resources/application-example.properties backend/src/main/resources/application-local.properties
 ```
 
----
+2. Ajusta credenciales en `backend/src/main/resources/application-local.properties`.
 
-## 📥 Instalación
-
-### 1. Clona el repositorio
-```bash
-git clone <URL-del-repositorio>
-cd backend
-```
-
-### 2. Configura Neo4j
-Copia el archivo de ejemplo y actualiza tus credenciales:
+## Arranque rapido
+1. Levanta Neo4j (Desktop o Docker).
+2. Desde `backend`, arranca la app:
 
 ```bash
-# Windows (PowerShell)
-Copy-Item src/main/resources/application-example.properties src/main/resources/application-local.properties
-
-# macOS/Linux
-cp src/main/resources/application-example.properties src/main/resources/application-local.properties
+mvn spring-boot:run "-Dspring.profiles.active=local"
 ```
 
-Edita `application-local.properties` con las credenciales:
-```properties
-spring.neo4j.uri=bolt://localhost:7687
-spring.neo4j.authentication.username=neo4j
-spring.neo4j.authentication.password=TU_CONTRASEÑA (solicitar a los dueños del proyecto)
-```
+3. Abre en navegador:
+- Frontend: `http://localhost:8080/`
+- API tecnologias: `http://localhost:8080/api/tecnologias`
+- API temas: `http://localhost:8080/api/temas`
 
-### 3. Inicia Neo4j
+## Seed de datos
+El seed se ejecuta al iniciar mediante `Neo4jSeedRunner`.
 
-**Opción A: Con Docker (Recomendado)**
-```bash
-docker run --name neo4j-g35 \
-  -p 7687:7687 \
-  -p 7474:7474 \
-  -e NEO4J_AUTH=neo4j/password \
-  neo4j:latest
-```
+- Toggle: `app.seed.enabled=true|false` en `backend/src/main/resources/application.properties`
+- Script: `backend/src/main/resources/data.cypher`
 
-**Opción B: Instalación Local**
-- Descarga Neo4j desde [neo4j.com](https://neo4j.com/download/)
-- Ejecuta el instalador
-- Inicia el servicio desde la aplicación
+Importante: el script actual comienza borrando el grafo completo (`MATCH (n) DETACH DELETE n;`).
+Si no quieres reinicializar datos en cada arranque, pon `app.seed.enabled=false`.
 
-### 4. Dirígete al directorio del proyecto
-```bash
-cd backend
-```
+## Endpoints disponibles
+- `GET /api/tecnologias` -> lista tecnologias (con compatibles)
+- `GET /api/tecnologias/{tema}` -> tecnologias filtradas por tema
+- `GET /api/temas` -> lista de temas
 
----
-
-## ▶️ Ejecución
-
-### Compile el proyecto
-```bash
-mvn clean install
-```
-
-### Ejecuta la aplicación (Desarrollo)
-```bash
-mvn spring-boot:run -Dspring.profiles.active=local
-```
-
-La aplicación estará disponible en: **http://localhost:8080**
-
-### Ejecuta como JAR (Producción)
-```bash
-mvn clean package
-java -jar target/backend-0.0.1-SNAPSHOT.jar --spring.profiles.active=local
-```
-
----
-
-## 📂 Estructura del Proyecto
-
-```
+## Estructura principal
+```text
 backend/
-├── src/
-│   ├── main/
-│   │   ├── java/com/G35/backend/
-│   │   │   └── BackendApplication.java    # Clase principal
-│   │   └── resources/
-│   │       ├── application.properties             # Config base (compartida)
-│   │       ├── application-example.properties     # Config de ejemplo
-│   │       └── application-local.properties       # Config local (NO COMPARTIR)
-│   └── test/
-│       └── java/com/G35/backend/
-│           └── BackendApplicationTests.java
-├── pom.xml                                 # Dependencias Maven
-├── mvnw / mvnw.cmd                        # Maven wrapper
-├── README.md                               # Este archivo
-├── NEO4J_CONFIG.md                        # Guía de configuración Neo4j
-└── .gitignore                              # Archivos ignorados por Git
+   src/main/java/com/G35/backend/
+      config/Neo4jSeedRunner.java
+      tecnologias/
+      temas/
+   src/main/resources/
+      application.properties
+      application-local.properties
+      data.cypher
+      static/
+         index.html
+         styles.css
+         app.js
 ```
 
----
+## Problemas comunes
+- Puerto 8080 ocupado:
 
-## 🗄️ Configuración de Neo4j
-
-Ver el archivo **[NEO4J_CONFIG.md](NEO4J_CONFIG.md)** para más detalles sobre:
-- Cómo configurar la conexión a Neo4j
-- Credenciales y autenticación
-- Resolver problemas de conexión
-
----
-
-## 🔄 Flujo de Trabajo
-
-### Para Desarrolladores
-
-1. **Clonar el repositorio**
-   ```bash
-   git clone <URL>
-   ```
-
-2. **Crear archivo de configuración local**
-   ```bash
-   cp src/main/resources/application-example.properties src/main/resources/application-local.properties
-   ```
-
-3. **Actualizar credenciales de Neo4j** en `application-local.properties`
-
-4. **Ejecutar el proyecto** con Spring Boot
-   ```bash
-   mvn spring-boot:run -Dspring.profiles.active=local
-   ```
-
-5. **Hacer cambios** - Spring DevTools recargará automáticamente
-
-6. **Hacer commit** (except `application-local.properties`)
-   ```bash
-   git add .
-   git commit -m "Tu mensaje"
-   git push
-   ```
-
----
-
-## 🔐 Seguridad
-
-⚠️ **IMPORTANTE - Nunca compartas credenciales:**
-
-- ✅ `application.properties` - Se comparte (sin credenciales)
-- ✅ `application-example.properties` - Se comparte (plantilla)
-- ❌ `application-local.properties` - **NO se comparte** (está en `.gitignore`)
-
----
-
-## 📦 Dependencias Principales
-
-| Libería | Versión | Propósito |
-|---------|---------|----------|
-| Spring Boot Starter Web | 4.0.5 | Framework web y REST |
-| Spring Data Neo4j | 4.0.5 | ORM para Neo4j |
-| Lombok | Latest | Reduce boilerplate |
-| Spring DevTools | 4.0.5 | Hot reload en desarrollo |
-
-Para ver todas las dependencias:
 ```bash
-mvn dependency:tree
+mvn spring-boot:run "-Dspring.profiles.active=local" "-Dspring-boot.run.arguments=--server.port=8081"
 ```
 
----
-
-## 🚀 Rutas de API (Ejemplos)
-
-Una vez que el proyecto está corriendo, puedes acceder a:
-
-```
-GET  http://localhost:8080/                  # Página principal
-```
-
-*(Añade tus endpoints aquí según desarrolles)*
-
----
-
-## 🐛 Solución de Problemas
-
-### "Connection refused" a Neo4j
-- Verifica que Neo4j está corriendo
-- Confirma que el puerto es correcto (puerto 7687 por defecto)
-- Revisa las credenciales en `application-local.properties`
-
-### "Spring Boot no inicia"
-```bash
-# Limpia y recompila
-mvn clean install
-mvn spring-boot:run -Dspring.profiles.active=local
-```
-
-### "No encuentra application-local.properties"
-**DON'T PANIC** - Es normal, cópialo desde `application-example.properties`:
-```bash
-cp src/main/resources/application-example.properties src/main/resources/application-local.properties
-```
-
-### Puerto 8080 ya está en uso
-```bash
-mvn spring-boot:run -Dspring.profiles.active=local -Dspring-boot.run.arguments="--server.port=8081"
-```
+- No conecta a Neo4j:
+   - Verifica Neo4j encendido
+   - Verifica usuario/password en `application-local.properties`
+   - Verifica puerto Bolt `7687`

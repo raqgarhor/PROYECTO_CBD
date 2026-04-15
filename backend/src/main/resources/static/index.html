@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G35 Neo4j Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main class="layout">
+        <section class="hero">
+            <p class="tag">Spring Boot + Neo4j</p>
+            <h1>Explorador de Tecnologias</h1>
+            <p class="subtitle">Consulta tecnologias y temas desde la web. Las respuestas salen de la API, y la API consulta Neo4j.</p>
+        </section>
+
+        <section class="panel controls">
+            <h2>Consultas</h2>
+            <div class="query-group">
+                <h3>GET Basicos</h3>
+                <div class="actions basic-actions">
+                    <button id="btnAll" type="button">Ver todas las tecnologias</button>
+                    <button id="btnAllTemas" type="button">Ver todos los temas</button>
+                </div>
+            </div>
+
+            <div class="query-group">
+                <h3>Consultas complejas</h3>
+                <div class="actions advanced-actions">
+                    <label for="temaSelect">Filtrar por tema</label>
+                    <select id="temaSelect" aria-label="Seleccionar tema"></select>
+                    <button id="btnTema" type="button">Buscar por tema</button>
+                </div>
+            </div>
+            <p id="status" class="status">Cargando temas...</p>
+        </section>
+
+        <section class="panel graph-browser-panel">
+            <h2>Grafo</h2>
+            <p class="graph-help">Visualizacion de nodos y relaciones generada a partir de la consulta actual.</p>
+            <div class="browser-layout">
+                <div class="graph-column">
+                    <div class="graph-wrap">
+                        <svg id="graph" viewBox="0 0 900 460" role="img" aria-label="Grafo de tecnologias y relaciones"></svg>
+                    </div>
+                    <div id="legend" class="legend"></div>
+                </div>
+                <aside class="results-column" aria-label="Resultados del grafo">
+                    <h3>Results Overview</h3>
+                    <p id="overviewMeta" class="overview-meta">Nodos (0)</p>
+                    <div id="overviewList" class="overview-list"></div>
+                </aside>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -12,7 +12,7 @@ public class TecnologiaService {
     private TecnologiaRepository tecnologiaRepository;
 
     public List<Tecnologia> listarTodo() {
-        return tecnologiaRepository.findAll();
+        return tecnologiaRepository.findAllWithCompatibles();
     }
 
     public List<Tecnologia> buscarPorTema(String tema) {

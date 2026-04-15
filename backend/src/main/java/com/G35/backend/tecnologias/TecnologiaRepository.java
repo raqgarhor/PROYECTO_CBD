@@ -7,7 +7,24 @@ import org.springframework.data.neo4j.repository.query.Query;
 
 public interface TecnologiaRepository extends Neo4jRepository<Tecnologia, String> {
 
-    @Query("MATCH (t:Tema {nombre: $nombreTema})<-[:VISTO_EN]-(tech) RETURN tech")
+    @Query("""
+            MATCH (tech:Tech)
+            OPTIONAL MATCH (tech)-[s:SE_INTEGRA_CON]->(compatible:Tech)
+            RETURN tech,
+                   collect(DISTINCT s),
+                   collect(DISTINCT compatible)
+            """)
+    List<Tecnologia> findAllWithCompatibles();
+
+    @Query("""
+            MATCH (t:Tema {nombre: $nombreTema})<-[v:VISTO_EN]-(tech:Tech)
+            OPTIONAL MATCH (tech)-[s:SE_INTEGRA_CON]->(compatible:Tech)
+            RETURN tech,
+                   collect(DISTINCT v),
+                   collect(DISTINCT t),
+                   collect(DISTINCT s),
+                   collect(DISTINCT compatible)
+            """)
     List<Tecnologia> findByTema(String nombreTema);
 
 }
