@@ -36,7 +36,13 @@ public class Neo4jSeedRunner implements CommandLineRunner {
             return;
         }
 
-        executeSeedFile("classpath:data.cypher");
+        try {
+            executeSeedFile("classpath:data.cypher");
+        } catch (Exception e) {
+            logger.warn("⚠️ Error al cargar datos en Neo4j: {}",
+                    e.getMessage());
+            throw new RuntimeException("No se pudo conectar a Neo4j en " + System.getProperty("spring.neo4j.uri"), e);
+        }
     }
 
     private void executeSeedFile(String location) throws IOException {

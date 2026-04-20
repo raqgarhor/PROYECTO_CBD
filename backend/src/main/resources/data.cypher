@@ -267,10 +267,233 @@ CREATE (couchbase)-[:VISTO_EN]->(t07)
 CREATE (snowflake)-[:VISTO_EN]->(t06)
 
 
+// Actualizar nodos existentes con propiedades faltantes (id, label)
+MATCH (n:Tech) WHERE n.id IS NULL SET n.id = n.nombre, n.label = n.nombre
+MATCH (n:Tema) WHERE n.label IS NULL SET n.label = n.nombre
+
 // --- RELACIONES: SE_INTEGRA_CON (Compatibilidad) ---
-CREATE (spring)-[:SE_INTEGRA_CON]->(neo4j)
-CREATE (spring)-[:SE_INTEGRA_CON]->(mongo)
-CREATE (spring)-[:SE_INTEGRA_CON]->(redis)
-CREATE (spark)-[:SE_INTEGRA_CON]->(neo4j)
-CREATE (spark)-[:SE_INTEGRA_CON]->(mongo)
-CREATE (jena)-[:SE_INTEGRA_CON]->(neo4j)
+CREATE (spring)-[:SE_INTEGRA_CON {weight: 1.0, type: "SE_INTEGRA_CON"}]->(neo4j)
+CREATE (spring)-[:SE_INTEGRA_CON {weight: 1.0, type: "SE_INTEGRA_CON"}]->(mongo)
+CREATE (spring)-[:SE_INTEGRA_CON {weight: 1.0, type: "SE_INTEGRA_CON"}]->(redis)
+CREATE (spark)-[:SE_INTEGRA_CON {weight: 1.0, type: "SE_INTEGRA_CON"}]->(neo4j)
+CREATE (spark)-[:SE_INTEGRA_CON {weight: 1.0, type: "SE_INTEGRA_CON"}]->(mongo)
+CREATE (jena)-[:SE_INTEGRA_CON {weight: 1.0, type: "SE_INTEGRA_CON"}]->(neo4j)
+
+// Adicionales relaciones de compatibilidad
+CREATE (mongo)-[:SE_INTEGRA_CON {weight: 1.0, type: "SE_INTEGRA_CON"}]->(spark)
+CREATE (redis)-[:SE_INTEGRA_CON {weight: 1.0, type: "SE_INTEGRA_CON"}]->(spark)
+CREATE (postgis)-[:SE_INTEGRA_CON {weight: 1.0, type: "SE_INTEGRA_CON"}]->(spring)
+
+
+
+// =====================================================
+// MEJORAS VISUALES Y DE INVESTIGACIÓN
+// =====================================================
+
+// --- PROPIEDADES EXTRA PARA TECNOLOGÍAS ---
+MATCH (n:Tech {nombre:"Neo4j"})
+SET n.descripcion = "Base de datos de grafos orientada al análisis de relaciones complejas",
+    n.popularidad = 9,
+    n.dificultad = 6,
+    n.openSource = true,
+    n.madurez = "Alta";
+
+MATCH (n:Tech {nombre:"Spring Boot"})
+SET n.descripcion = "Framework backend para construir APIs y microservicios en Java",
+    n.popularidad = 10,
+    n.dificultad = 5,
+    n.openSource = true,
+    n.madurez = "Alta";
+
+MATCH (n:Tech {nombre:"MongoDB"})
+SET n.descripcion = "Base de datos documental NoSQL ampliamente usada en aplicaciones web",
+    n.popularidad = 9,
+    n.dificultad = 4,
+    n.openSource = true,
+    n.madurez = "Alta";
+
+MATCH (n:Tech {nombre:"Apache Spark"})
+SET n.descripcion = "Motor de procesamiento distribuido para analítica y Big Data",
+    n.popularidad = 9,
+    n.dificultad = 7,
+    n.openSource = true,
+    n.madurez = "Alta";
+
+MATCH (n:Tech {nombre:"Apache Jena"})
+SET n.descripcion = "Framework para Web Semántica, RDF y SPARQL",
+    n.popularidad = 6,
+    n.dificultad = 7,
+    n.openSource = true,
+    n.madurez = "Media";
+
+MATCH (n:Tech {nombre:"Ethereum"})
+SET n.descripcion = "Plataforma blockchain para contratos inteligentes y aplicaciones descentralizadas",
+    n.popularidad = 8,
+    n.dificultad = 7,
+    n.openSource = true,
+    n.madurez = "Alta";
+
+MATCH (n:Tech {nombre:"PostGIS"})
+SET n.descripcion = "Extensión espacial de PostgreSQL para datos GIS",
+    n.popularidad = 8,
+    n.dificultad = 6,
+    n.openSource = true,
+    n.madurez = "Alta";
+
+MATCH (n:Tech {nombre:"Couchbase"})
+SET n.descripcion = "Base NoSQL orientada a aplicaciones móviles con sincronización",
+    n.popularidad = 7,
+    n.dificultad = 5,
+    n.openSource = false,
+    n.madurez = "Media";
+
+MATCH (n:Tech {nombre:"Snowflake"})
+SET n.descripcion = "Plataforma cloud para Data Warehouse y analítica",
+    n.popularidad = 8,
+    n.dificultad = 5,
+    n.openSource = false,
+    n.madurez = "Alta";
+
+// --- RELACIONES ADICIONALES PARA DENSIFICAR EL GRAFO ---
+// Backend + bases de datos
+MATCH (a:Tech {nombre:"Spring Boot"}), (b:Tech {nombre:"Neo4j"})
+MERGE (a)-[:SE_INTEGRA_CON]->(b);
+
+MATCH (a:Tech {nombre:"Spring Boot"}), (b:Tech {nombre:"MongoDB"})
+MERGE (a)-[:SE_INTEGRA_CON]->(b);
+
+MATCH (a:Tech {nombre:"Spring Boot"}), (b:Tech {nombre:"Redis"})
+MERGE (a)-[:SE_INTEGRA_CON]->(b);
+
+MATCH (a:Tech {nombre:"Spring Boot"}), (b:Tech {nombre:"Couchbase"})
+MERGE (a)-[:SE_INTEGRA_CON]->(b);
+
+// Big Data y analítica
+MATCH (a:Tech {nombre:"Apache Spark"}), (b:Tech {nombre:"Neo4j"})
+MERGE (a)-[:SE_INTEGRA_CON]->(b);
+
+MATCH (a:Tech {nombre:"Apache Spark"}), (b:Tech {nombre:"MongoDB"})
+MERGE (a)-[:SE_INTEGRA_CON]->(b);
+
+MATCH (a:Tech {nombre:"Apache Spark"}), (b:Tech {nombre:"Snowflake"})
+MERGE (a)-[:SE_INTEGRA_CON]->(b);
+
+MATCH (a:Tech {nombre:"Apache Spark"}), (b:Tech {nombre:"KNIME"})
+MERGE (a)-[:RELACIONADA_CON]->(b);
+
+MATCH (a:Tech {nombre:"Apache Spark"}), (b:Tech {nombre:"RapidMiner"})
+MERGE (a)-[:RELACIONADA_CON]->(b);
+
+// Web semántica y grafos
+MATCH (a:Tech {nombre:"Apache Jena"}), (b:Tech {nombre:"Neo4j"})
+MERGE (a)-[:RELACIONADA_CON]->(b);
+
+MATCH (a:Tech {nombre:"Apache Jena"}), (b:Tech {nombre:"Virtuoso"})
+MERGE (a)-[:COMPITE_CON]->(b);
+
+MATCH (a:Tech {nombre:"Neo4j"}), (b:Tech {nombre:"Virtuoso"})
+MERGE (a)-[:ES_ALTERNATIVA_A]->(b);
+
+MATCH (a:Tech {nombre:"Neo4j"}), (b:Tech {nombre:"InfoGrid"})
+MERGE (a)-[:COMPITE_CON]->(b);
+
+// NoSQL
+MATCH (a:Tech {nombre:"MongoDB"}), (b:Tech {nombre:"CouchDB"})
+MERGE (a)-[:COMPITE_CON]->(b);
+
+MATCH (a:Tech {nombre:"MongoDB"}), (b:Tech {nombre:"Couchbase"})
+MERGE (a)-[:RELACIONADA_CON]->(b);
+
+MATCH (a:Tech {nombre:"MongoDB"}), (b:Tech {nombre:"DynamoDB"})
+MERGE (a)-[:COMPITE_CON]->(b);
+
+MATCH (a:Tech {nombre:"Redis"}), (b:Tech {nombre:"DynamoDB"})
+MERGE (a)-[:RELACIONADA_CON]->(b);
+
+MATCH (a:Tech {nombre:"Redis"}), (b:Tech {nombre:"Memcached"})
+MERGE (a)-[:ES_ALTERNATIVA_A]->(b);
+
+MATCH (a:Tech {nombre:"Cassandra"}), (b:Tech {nombre:"HBase"})
+MERGE (a)-[:COMPITE_CON]->(b);
+
+MATCH (a:Tech {nombre:"BigTable"}), (b:Tech {nombre:"HBase"})
+MERGE (a)-[:RELACIONADA_CON]->(b);
+
+// GIS
+MATCH (a:Tech {nombre:"PostGIS"}), (b:Tech {nombre:"QGIS"})
+MERGE (a)-[:SE_INTEGRA_CON]->(b);
+
+MATCH (a:Tech {nombre:"PostGIS"}), (b:Tech {nombre:"OpenStreetMap"})
+MERGE (a)-[:SE_INTEGRA_CON]->(b);
+
+MATCH (a:Tech {nombre:"QGIS"}), (b:Tech {nombre:"OpenStreetMap"})
+MERGE (a)-[:SE_INTEGRA_CON]->(b);
+
+MATCH (a:Tech {nombre:"ArcGIS Online"}), (b:Tech {nombre:"Mapbox"})
+MERGE (a)-[:COMPITE_CON]->(b);
+
+MATCH (a:Tech {nombre:"Google Maps"}), (b:Tech {nombre:"OpenStreetMap"})
+MERGE (a)-[:COMPITE_CON]->(b);
+
+// Blockchain
+MATCH (a:Tech {nombre:"Ethereum"}), (b:Tech {nombre:"Hyperledger"})
+MERGE (a)-[:COMPITE_CON]->(b);
+
+MATCH (a:Tech {nombre:"Ethereum"}), (b:Tech {nombre:"EVM (Ethereum Virtual Machine)"})
+MERGE (a)-[:SE_INTEGRA_CON]->(b);
+
+MATCH (a:Tech {nombre:"Hyperledger"}), (b:Tech {nombre:"IBM Blockchain"})
+MERGE (a)-[:SE_INTEGRA_CON]->(b);
+
+MATCH (a:Tech {nombre:"Bitcoin"}), (b:Tech {nombre:"Ethereum"})
+MERGE (a)-[:COMPITE_CON]->(b);
+
+// DW / ETL
+MATCH (a:Tech {nombre:"Snowflake"}), (b:Tech {nombre:"Talend Open Studio"})
+MERGE (a)-[:SE_INTEGRA_CON]->(b);
+
+MATCH (a:Tech {nombre:"Snowflake"}), (b:Tech {nombre:"Kettle (Pentaho Data Integration)"})
+MERGE (a)-[:SE_INTEGRA_CON]->(b);
+
+MATCH (a:Tech {nombre:"Talend Open Studio"}), (b:Tech {nombre:"Kettle (Pentaho Data Integration)"})
+MERGE (a)-[:COMPITE_CON]->(b);
+
+MATCH (a:Tech {nombre:"IBM DataStage"}), (b:Tech {nombre:"Informatica PowerCenter"})
+MERGE (a)-[:COMPITE_CON]->(b);
+
+// Móviles
+MATCH (a:Tech {nombre:"Couchbase Mobile"}), (b:Tech {nombre:"Couchbase Lite"})
+MERGE (a)-[:SE_INTEGRA_CON]->(b);
+
+MATCH (a:Tech {nombre:"Couchbase Mobile"}), (b:Tech {nombre:"Sync Gateway"})
+MERGE (a)-[:SE_INTEGRA_CON]->(b);
+
+MATCH (a:Tech {nombre:"SQLite"}), (b:Tech {nombre:"Cloud Firestore (Firebase)"})
+MERGE (a)-[:COMPITE_CON]->(b);
+
+MATCH (a:Tech {nombre:"Realm"}), (b:Tech {nombre:"SQLite"})
+MERGE (a)-[:COMPITE_CON]->(b);
+
+// Minería de datos
+MATCH (a:Tech {nombre:"KNIME"}), (b:Tech {nombre:"RapidMiner"})
+MERGE (a)-[:COMPITE_CON]->(b);
+
+MATCH (a:Tech {nombre:"KNIME"}), (b:Tech {nombre:"Weka"})
+MERGE (a)-[:RELACIONADA_CON]->(b);
+
+MATCH (a:Tech {nombre:"Orange"}), (b:Tech {nombre:"Weka"})
+MERGE (a)-[:RELACIONADA_CON]->(b);
+
+MATCH (a:Tech {nombre:"R"}), (b:Tech {nombre:"Weka"})
+MERGE (a)-[:RELACIONADA_CON]->(b);
+
+// RELACIONES ENTRE TEMAS A PARTIR DE TECNOLOGÍAS TRANSVERSALES
+MATCH (tech:Tech)-[:VISTO_EN]->(t1:Tema),
+      (tech)-[:VISTO_EN]->(t2:Tema)
+WHERE t1 <> t2
+MERGE (t1)-[:CONECTADO_POR]->(t2);
+
+// MARCAR TECNOLOGÍAS PUENTE
+MATCH (tech:Tech)-[:VISTO_EN]->(tema:Tema)
+WITH tech, count(DISTINCT tema) AS totalTemas
+SET tech.esPuente = totalTemas > 1;
