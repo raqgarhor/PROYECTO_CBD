@@ -82,17 +82,75 @@ Importante: el script actual comienza borrando el grafo completo (`MATCH (n) DET
 Si no quieres reinicializar datos en cada arranque, pon `app.seed.enabled=false`.
 
 ## Endpoints disponibles
-- `GET /api/tecnologias` -> lista tecnologias (con compatibles)
-- `GET /api/tecnologias/{tema}` -> tecnologias filtradas por tema
-- `GET /api/temas` -> lista de temas
+
+### Tecnologías (CRUD Completo)
+- `GET /api/tecnologias` → Lista todas las tecnologías
+- `GET /api/tecnologias/{nombre}` → Obtiene una tecnología por nombre
+- `GET /api/tecnologias/buscar/tema/{tema}` → Filtra tecnologías por tema
+- `POST /api/tecnologias` → Crea una nueva tecnología
+- `PUT /api/tecnologias/{nombre}` → Actualiza una tecnología
+- `DELETE /api/tecnologias/{nombre}` → Elimina una tecnología
+
+### Temas (CRUD Completo)
+- `GET /api/temas` → Lista todos los temas
+- `GET /api/temas/{id}` → Obtiene un tema por id
+- `POST /api/temas` → Crea un nuevo tema
+- `PUT /api/temas/{id}` → Actualiza un tema
+- `DELETE /api/temas/{id}` → Elimina un tema
+
+**Consulta [API_GUIDE.md](./API_GUIDE.md) para ejemplos detallados con curl.**
+
+## Cambios Implementados (v0.0.2)
+
+### ✅ CRUD Completo
+- Operaciones POST, PUT, DELETE para Tecnologías y Temas
+- Métodos adicionales GET para recuperar recursos específicos
+
+### ✅ Validación de Entrada
+- Validaciones con `@Valid` y `jakarta.validation`
+- Restricciones en tamaño y contenido de campos
+- Mensajes de error claros y específicos
+
+### ✅ Manejo Centralizado de Errores
+- `GlobalExceptionHandler` para capturar excepciones
+- Respuestas de error estructuradas (timestamp, status, message, errors)
+- Distinción entre errores de validación (400), no encontrado (404) e internos (500)
+
+### ✅ DTOs (Data Transfer Objects)
+- `TecnologiaDTO` y `TemaDTO` separan la capa de API de las entidades
+- Mappers para conversión Entity ↔ DTO
+
+### ✅ Arquitectura Mejorada
+- Servicios robustos con lógica de negocio centralizada
+- Controllers enfocados en manejo de peticiones
+- Inyección de dependencias clara
 
 ## Estructura principal
 ```text
 backend/
    src/main/java/com/G35/backend/
-      config/Neo4jSeedRunner.java
+      config/
+         Neo4jSeedRunner.java
+         GlobalExceptionHandler.java
       tecnologias/
+         Tecnologia.java
+         TecnologiaController.java
+         TecnologiaService.java
+         TecnologiaRepository.java
+         dto/
+            TecnologiaDTO.java
+         mapper/
+            TecnologiaMapper.java
       temas/
+         Tema.java
+         TemaController.java
+         TemaService.java
+         TemaRepository.java
+         dto/
+            TemaDTO.java
+         mapper/
+            TemaMapper.java
+      BackendApplication.java
    src/main/resources/
       application.properties
       application-local.properties
@@ -101,6 +159,7 @@ backend/
          index.html
          styles.css
          app.js
+   pom.xml
 ```
 
 ## Problemas comunes

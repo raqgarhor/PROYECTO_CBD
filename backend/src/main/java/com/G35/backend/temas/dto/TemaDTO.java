@@ -1,7 +1,4 @@
-package com.G35.backend.temas;
-
-import org.springframework.data.neo4j.core.schema.Id;
-import org.springframework.data.neo4j.core.schema.Node;
+package com.G35.backend.temas.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -10,14 +7,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Node("Tema")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Tema {
+public class TemaDTO {
 
-    @Id
     @NotBlank(message = "El id del tema no puede estar vacío")
     @Size(min = 1, max = 50, message = "El id debe tener entre 1 y 50 caracteres")
     private String id;
