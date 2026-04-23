@@ -487,6 +487,118 @@ MERGE (a)-[:RELACIONADA_CON]->(b);
 MATCH (a:Tech {nombre:"R"}), (b:Tech {nombre:"Weka"})
 MERGE (a)-[:RELACIONADA_CON]->(b);
 
+// RELACIONES DE COMPLEMENTARIEDAD
+MATCH (a:Tech {nombre:"Spring Boot"}), (b:Tech {nombre:"Neo4j"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Spring Boot"}), (b:Tech {nombre:"MongoDB"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Neo4j"}), (b:Tech {nombre:"Apache Spark"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"MongoDB"}), (b:Tech {nombre:"Redis"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"PostGIS"}), (b:Tech {nombre:"QGIS"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"QGIS"}), (b:Tech {nombre:"OpenStreetMap"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Ethereum"}), (b:Tech {nombre:"EVM (Ethereum Virtual Machine)"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Snowflake"}), (b:Tech {nombre:"Talend Open Studio"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Couchbase Mobile"}), (b:Tech {nombre:"Sync Gateway"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"KNIME"}), (b:Tech {nombre:"R"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Apache Jena"}), (b:Tech {nombre:"Neo4j"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"MongoDB"}), (b:Tech {nombre:"Apache Spark"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Redis"}), (b:Tech {nombre:"Memcached"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"DynamoDB"}), (b:Tech {nombre:"Amazon Managed Blockchain"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"PostGIS"}), (b:Tech {nombre:"OpenStreetMap"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"ArcGIS Online"}), (b:Tech {nombre:"Google Maps"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Snowflake"}), (b:Tech {nombre:"Kettle (Pentaho Data Integration)"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"IBM DataStage"}), (b:Tech {nombre:"Snowflake"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Couchbase Mobile"}), (b:Tech {nombre:"Cloud Firestore (Firebase)"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Realm"}), (b:Tech {nombre:"Sync Gateway"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"RapidMiner"}), (b:Tech {nombre:"Weka"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Orange"}), (b:Tech {nombre:"R"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Talend Open Studio"}), (b:Tech {nombre:"Apache Spark"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Spring Boot"}), (b:Tech {nombre:"Redis"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Spring Boot"}), (b:Tech {nombre:"Apache Spark"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"MongoDB"}), (b:Tech {nombre:"Couchbase"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Cassandra"}), (b:Tech {nombre:"Apache Spark"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"HBase"}), (b:Tech {nombre:"Apache Spark"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"BigTable"}), (b:Tech {nombre:"Apache Spark"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Oracle Spatial"}), (b:Tech {nombre:"QGIS"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Mapbox"}), (b:Tech {nombre:"OpenStreetMap"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Hyperledger"}), (b:Tech {nombre:"IBM Blockchain"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"EVM (Ethereum Virtual Machine)"}), (b:Tech {nombre:"JVM (Java Virtual Machine)"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Talend Open Studio"}), (b:Tech {nombre:"Snowflake"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Couchbase Lite"}), (b:Tech {nombre:"SQLite"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"Microsoft SQL Server Compact"}), (b:Tech {nombre:"SQLite"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
+MATCH (a:Tech {nombre:"KNIME"}), (b:Tech {nombre:"Orange"})
+MERGE (a)-[:COMPLEMENTA]->(b);
+
 // RELACIONES ENTRE TEMAS A PARTIR DE TECNOLOGÍAS TRANSVERSALES
 MATCH (tech:Tech)-[:VISTO_EN]->(t1:Tema),
       (tech)-[:VISTO_EN]->(t2:Tema)

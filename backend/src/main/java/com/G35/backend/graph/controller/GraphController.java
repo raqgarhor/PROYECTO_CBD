@@ -48,6 +48,11 @@ public class GraphController {
         return ResponseEntity.ok(graphService.getRecommendations(temaId));
     }
 
+    @GetMapping("/complementa")
+    public ResponseEntity<GraphResponseDTO> getComplementaGraph() {
+        return ResponseEntity.ok(graphService.getComplementaGraph());
+    }
+
     @GetMapping("/analytics")
     public ResponseEntity<AnalyticsDTO> getAnalytics() {
         return ResponseEntity.ok(graphService.getAnalytics());

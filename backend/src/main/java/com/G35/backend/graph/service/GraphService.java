@@ -113,6 +113,10 @@ public class GraphService {
         return graphRepository.getSubgraphByNodeIds(ids);
     }
 
+    public GraphResponseDTO getComplementaGraph() {
+        return graphRepository.getComplementaSubgraph();
+    }
+
     public AnalyticsDTO getAnalytics() {
         List<Map<String, Object>> importanceRaw = graphRepository.getNodeDegrees();
 

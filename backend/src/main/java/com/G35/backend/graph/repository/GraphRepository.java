@@ -309,6 +309,75 @@ public class GraphRepository {
         }
     }
 
+    public GraphResponseDTO getComplementaSubgraph() {
+        try (Session session = driver.session()) {
+            Result nodeResult = session.run("""
+                    MATCH (a:Tech)-[:COMPLEMENTA]-(b:Tech)
+                    WITH collect(DISTINCT a) + collect(DISTINCT b) AS nodes
+                    UNWIND nodes AS n
+                    WITH DISTINCT n
+                    OPTIONAL MATCH (n)-[r]-()
+                    WITH n, count(DISTINCT r) AS connections
+                    RETURN {
+                        id: CASE WHEN n.nombre IS NOT NULL THEN n.nombre ELSE n.id END,
+                        label: CASE WHEN n.nombre IS NOT NULL THEN n.nombre ELSE n.id END,
+                        category: CASE
+                            WHEN 'Tema' IN labels(n) THEN 'Tema'
+                            ELSE coalesce(n.categoria, 'Tech')
+                        END,
+                        connections: connections,
+                        importance: CASE
+                            WHEN connections >= 12 THEN 1.0
+                            ELSE toFloat(connections) / 12.0
+                        END,
+                        isPuente: CASE WHEN connections >= 4 THEN true ELSE false END
+                    } AS result
+                    ORDER BY result.label
+                    """);
+
+            List<CytoscapeNodeDTO> nodes = nodeResult.list(record -> {
+                Map<String, Object> row = record.get("result").asMap();
+
+                CytoscapeNodeDTO.NodeData data = new CytoscapeNodeDTO.NodeData();
+                data.setId(String.valueOf(row.get("id")));
+                data.setLabel(String.valueOf(row.get("label")));
+                data.setCategory(String.valueOf(row.get("category")));
+                data.setConnections(((Number) row.get("connections")).intValue());
+                data.setImportance(((Number) row.get("importance")).doubleValue());
+                data.setIsPuente(Boolean.parseBoolean(String.valueOf(row.get("isPuente"))));
+                data.setMetadata(null);
+
+                return new CytoscapeNodeDTO(data);
+            });
+
+            Result edgeResult = session.run("""
+                    MATCH (a:Tech)-[r:COMPLEMENTA]-(b:Tech)
+                    RETURN DISTINCT {
+                        id: elementId(r),
+                        source: CASE WHEN a.nombre IS NOT NULL THEN a.nombre ELSE a.id END,
+                        target: CASE WHEN b.nombre IS NOT NULL THEN b.nombre ELSE b.id END,
+                        type: type(r),
+                        weight: 1.8
+                    } AS result
+                    """);
+
+            List<CytoscapeEdgeDTO> edges = edgeResult.list(record -> {
+                Map<String, Object> row = record.get("result").asMap();
+
+                CytoscapeEdgeDTO.EdgeData data = new CytoscapeEdgeDTO.EdgeData();
+                data.setId(String.valueOf(row.get("id")));
+                data.setSource(String.valueOf(row.get("source")));
+                data.setTarget(String.valueOf(row.get("target")));
+                data.setType(String.valueOf(row.get("type")));
+                data.setWeight(((Number) row.get("weight")).doubleValue());
+
+                return new CytoscapeEdgeDTO(data);
+            });
+
+            return new GraphResponseDTO(nodes, edges);
+        }
+    }
+
     public List<Map<String, Object>> getNodeDegrees() {
         try (Session session = driver.session()) {
             Result result = session.run("""

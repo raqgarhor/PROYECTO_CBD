@@ -7,6 +7,7 @@ import FilterPanel from './components/FilterPanel';
 import DashboardStats from './components/DashboardStats';
 import PathFinderPanel from './components/PathFinderPanel';
 import RecommendationPanel from './components/RecommendationPanel';
+import ComplementaPanel from './components/ComplementaPanel';
 import AnalyticsPanel from './components/AnalyticsPanel';
 
 const API_URL = 'http://localhost:8080/api/graph';
@@ -110,6 +111,71 @@ function App() {
     }
   };
 
+  const applyComplementaFilters = (graph, filters = {}) => {
+    const nodes = Array.isArray(graph?.nodes) ? graph.nodes : [];
+    const edges = Array.isArray(graph?.edges) ? graph.edges : [];
+    const category = filters.category || 'all';
+    const techId = filters.techId || '';
+
+    const getNodeData = (node) => node?.data ?? node;
+    const getEdgeData = (edge) => edge?.data ?? edge;
+
+    let allowedIds = new Set(
+      nodes
+        .map((node) => getNodeData(node)?.id)
+        .filter(Boolean)
+    );
+
+    if (category !== 'all') {
+      const byCategory = new Set(
+        nodes
+          .filter((node) => getNodeData(node)?.category === category)
+          .map((node) => getNodeData(node)?.id)
+          .filter(Boolean)
+      );
+      allowedIds = new Set([...allowedIds].filter((id) => byCategory.has(id)));
+    }
+
+    if (techId) {
+      const neighborhood = new Set([techId]);
+      edges.forEach((edge) => {
+        const data = getEdgeData(edge);
+        const source = data?.source;
+        const target = data?.target;
+        if (source === techId && target) {
+          neighborhood.add(target);
+        }
+        if (target === techId && source) {
+          neighborhood.add(source);
+        }
+      });
+      allowedIds = new Set([...allowedIds].filter((id) => neighborhood.has(id)));
+    }
+
+    const filteredNodes = nodes.filter((node) => allowedIds.has(getNodeData(node)?.id));
+    const filteredEdges = edges.filter((edge) => {
+      const data = getEdgeData(edge);
+      return allowedIds.has(data?.source) && allowedIds.has(data?.target);
+    });
+
+    return { nodes: filteredNodes, edges: filteredEdges };
+  };
+
+  const handleComplementaLoaded = async (filters = {}) => {
+    try {
+      const response = await fetch(`${API_URL}/complementa`);
+      if (!response.ok) {
+        throw new Error('No se pudo cargar el subgrafo de relaciones COMPLEMENTA');
+      }
+      const result = await response.json();
+      setGraphData(applyComplementaFilters(result, filters));
+      setActiveMode('complementa');
+    } catch (error) {
+      console.error(error);
+      alert('No se pudo cargar el modo Complementa');
+    }
+  };
+
   return (
     <div className="app">
       <header className="topbar">
@@ -148,6 +214,12 @@ function App() {
           Recomendaciones
         </button>
         <button
+          className={activeMode === 'complementa' ? 'mode-btn active' : 'mode-btn'}
+          onClick={handleComplementaLoaded}
+        >
+          Complementa
+        </button>
+        <button
           className={activeMode === 'analytics' ? 'mode-btn active' : 'mode-btn'}
           onClick={() => setActiveMode('analytics')}
         >
@@ -173,6 +245,13 @@ function App() {
           <RecommendationPanel
             onLoadRecommendations={handleRecommendationsLoaded}
             onReset={resetGraph}
+          />
+
+          <ComplementaPanel
+            onLoadComplementa={handleComplementaLoaded}
+            onReset={resetGraph}
+            nodes={baseGraphData.nodes}
+            edges={baseGraphData.edges}
           />
         </aside>
 
