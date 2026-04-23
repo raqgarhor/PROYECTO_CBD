@@ -1,0 +1,57 @@
+.analytics-panel {
+  background: linear-gradient(180deg, rgba(10, 20, 40, 0.96), rgba(7, 16, 32, 0.94));
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 18px 34px rgba(2, 6, 23, 0.28);
+  color: #e5eefc;
+}
+
+.analytics-panel p {
+  color: #94a3b8;
+}
+
+.analytics-section {
+  margin-top: 18px;
+}
+
+.analytics-section h4 {
+  margin: 0 0 10px;
+  color: #f8fafc;
+  font-size: 15px;
+}
+
+.analytics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.analytics-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.analytics-item strong {
+  display: block;
+  font-size: 13px;
+  color: #f8fafc;
+}
+
+.analytics-item small {
+  display: block;
+  color: #94a3b8;
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.analytics-item span {
+  font-weight: 700;
+  color: #c7d2fe;
+}
