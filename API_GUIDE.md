@@ -1,56 +1,58 @@
 # API REST - Guía de Endpoints
 
-## Base URL
-```
+## 1. Objetivo
+Este documento describe los endpoints REST expuestos por el backend del proyecto, incluyendo las operaciones sobre tecnologías, temas y consultas del grafo.
+
+## 2. Base URL
+```text
 http://localhost:8080/api
 ```
 
----
+## 3. Convenciones generales
+- Todas las peticiones y respuestas usan JSON salvo indicación contraria.
+- Los campos `nombre`, `categoria` e `id` siguen las validaciones del backend.
+- Los errores se devuelven con formato estructurado desde `GlobalExceptionHandler`.
 
-## TECNOLOGÍAS - Endpoints
+## 4. Tecnologías
 
-### 1. Listar todas las tecnologías
+### 4.1 Listar todas las tecnologías
 **GET** `/tecnologias`
 
 ```bash
 curl -X GET http://localhost:8080/api/tecnologias
 ```
 
-**Respuesta:**
+**Respuesta de ejemplo:**
 ```json
 [
   {
     "nombre": "Neo4j",
-    "categoria": "Base de Datos"
+    "categoria": "Grafos",
+    "descripcion": "Base de datos de grafos para relaciones complejas"
   },
   {
     "nombre": "MongoDB",
-    "categoria": "NoSQL"
+    "categoria": "Documental",
+    "descripcion": "Base de datos NoSQL orientada a documentos"
   }
 ]
 ```
 
----
-
-### 2. Obtener una tecnología por nombre
+### 4.2 Obtener una tecnología por nombre
 **GET** `/tecnologias/{nombre}`
 
 ```bash
 curl -X GET http://localhost:8080/api/tecnologias/Neo4j
 ```
 
----
-
-### 3. Buscar tecnologías por tema
+### 4.3 Buscar tecnologías por tema
 **GET** `/tecnologias/buscar/tema/{tema}`
 
 ```bash
 curl -X GET http://localhost:8080/api/tecnologias/buscar/tema/NoSQL
 ```
 
----
-
-### 4. Crear una nueva tecnología
+### 4.4 Crear una tecnología básica
 **POST** `/tecnologias`
 
 ```bash
@@ -58,17 +60,53 @@ curl -X POST http://localhost:8080/api/tecnologias \
   -H "Content-Type: application/json" \
   -d '{
     "nombre": "PostgreSQL",
-    "categoria": "Bases de Datos Relacionales"
+    "categoria": "Relacional",
+    "descripcion": "Motor relacional de código abierto"
   }'
 ```
 
-**Validaciones:**
-- `nombre`: No vacío, entre 2 y 100 caracteres
-- `categoria`: No vacío, entre 2 y 50 caracteres
+### 4.5 Crear una tecnología con relaciones
+**POST** `/tecnologias/crear-con-relaciones`
 
----
+Este endpoint permite crear un nodo nuevo, vincularlo a un tema y añadir relaciones con otras tecnologías.
 
-### 5. Actualizar una tecnología
+**Ejemplo de payload:**
+```json
+{
+  "nombre": "Elasticsearch",
+  "categoria": "Search",
+  "descripcion": "Motor de búsqueda distribuido",
+  "temaId": "02",
+  "relaciones": [
+    {
+      "tipo": "COMPLEMENTA",
+      "destino": "MongoDB"
+    },
+    {
+      "tipo": "SE_INTEGRA_CON",
+      "destino": "Spring Boot"
+    }
+  ]
+}
+```
+
+**CURL:**
+```bash
+curl -X POST http://localhost:8080/api/tecnologias/crear-con-relaciones \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Elasticsearch",
+    "categoria": "Search",
+    "descripcion": "Motor de búsqueda distribuido",
+    "temaId": "02",
+    "relaciones": [
+      {"tipo": "COMPLEMENTA", "destino": "MongoDB"},
+      {"tipo": "SE_INTEGRA_CON", "destino": "Spring Boot"}
+    ]
+  }'
+```
+
+### 4.6 Actualizar una tecnología
 **PUT** `/tecnologias/{nombre}`
 
 ```bash
@@ -76,99 +114,167 @@ curl -X PUT http://localhost:8080/api/tecnologias/Neo4j \
   -H "Content-Type: application/json" \
   -d '{
     "nombre": "Neo4j",
-    "categoria": "Graph Database"
+    "categoria": "Grafos",
+    "descripcion": "Base de datos de grafos orientada a análisis de relaciones"
   }'
 ```
 
----
-
-### 6. Eliminar una tecnología
+### 4.7 Eliminar una tecnología
 **DELETE** `/tecnologias/{nombre}`
 
 ```bash
 curl -X DELETE http://localhost:8080/api/tecnologias/PostgreSQL
 ```
 
----
+## 5. Temas
 
-## TEMAS - Endpoints
-
-### 1. Listar todos los temas
+### 5.1 Listar todos los temas
 **GET** `/temas`
 
 ```bash
 curl -X GET http://localhost:8080/api/temas
 ```
 
-**Respuesta:**
+**Respuesta de ejemplo:**
 ```json
 [
   {
-    "id": "tema1",
-    "nombre": "NoSQL"
+    "id": "01",
+    "nombre": "Minería de Datos"
   },
   {
-    "id": "tema2",
-    "nombre": "Big Data"
+    "id": "02",
+    "nombre": "NoSQL"
   }
 ]
 ```
 
----
-
-### 2. Obtener un tema por id
+### 5.2 Obtener un tema por id
 **GET** `/temas/{id}`
 
 ```bash
-curl -X GET http://localhost:8080/api/temas/tema1
+curl -X GET http://localhost:8080/api/temas/02
 ```
 
----
-
-### 3. Crear un nuevo tema
+### 5.3 Crear un tema
 **POST** `/temas`
 
 ```bash
 curl -X POST http://localhost:8080/api/temas \
   -H "Content-Type: application/json" \
   -d '{
-    "id": "tema3",
-    "nombre": "Blockchain"
+    "id": "11",
+    "nombre": "Machine Learning"
   }'
 ```
 
-**Validaciones:**
-- `id`: No vacío, entre 1 y 50 caracteres
-- `nombre`: No vacío, entre 2 y 100 caracteres
-
----
-
-### 4. Actualizar un tema
+### 5.4 Actualizar un tema
 **PUT** `/temas/{id}`
 
 ```bash
-curl -X PUT http://localhost:8080/api/temas/tema1 \
+curl -X PUT http://localhost:8080/api/temas/02 \
   -H "Content-Type: application/json" \
   -d '{
-    "id": "tema1",
+    "id": "02",
     "nombre": "NoSQL Avanzado"
   }'
 ```
 
----
-
-### 5. Eliminar un tema
+### 5.5 Eliminar un tema
 **DELETE** `/temas/{id}`
 
 ```bash
-curl -X DELETE http://localhost:8080/api/temas/tema3
+curl -X DELETE http://localhost:8080/api/temas/11
 ```
 
----
+## 6. Grafo y analítica
 
-## Manejo de Errores
+### 6.1 Obtener el grafo completo
+**GET** `/graph`
 
-### Error de Validación (400 Bad Request)
+```bash
+curl -X GET http://localhost:8080/api/graph
+```
+
+### 6.2 Estadísticas generales
+**GET** `/graph/stats`
+
+Devuelve métricas globales como:
+- número de tecnologías
+- número de temas
+- integraciones
+- relaciones totales
+
+### 6.3 Detalle de un nodo
+**GET** `/graph/node/{nodeId}`
+
+```bash
+curl -X GET http://localhost:8080/api/graph/node/Neo4j
+```
+
+### 6.4 Camino más corto
+**GET** `/graph/path?from={origen}&to={destino}`
+
+```bash
+curl -X GET "http://localhost:8080/api/graph/path?from=Neo4j&to=MongoDB"
+```
+
+### 6.5 Buscar en el grafo
+**GET** `/graph/search?q={texto}`
+
+```bash
+curl -X GET "http://localhost:8080/api/graph/search?q=Spark"
+```
+
+### 6.6 Recomendaciones por tema
+**GET** `/graph/recommendations?temaId={id}`
+
+```bash
+curl -X GET "http://localhost:8080/api/graph/recommendations?temaId=02"
+```
+
+**Respuesta de ejemplo:**
+```json
+{
+  "temaId": "02",
+  "graph": {
+    "nodes": [],
+    "edges": []
+  },
+  "recommendations": [
+    {
+      "id": "MongoDB",
+      "nombre": "MongoDB",
+      "categoria": "Documental",
+      "score": 16.5,
+      "razones": [
+        "Pertenece al tema seleccionado",
+        "Se integra con 2 tecnologías",
+        "Tiene 1 relaciones COMPLEMENTA",
+        "Aparece en 2 tema(s)"
+      ]
+    }
+  ]
+}
+```
+
+### 6.7 Relaciones complementarias
+**GET** `/graph/complementa`
+
+```bash
+curl -X GET http://localhost:8080/api/graph/complementa
+```
+
+### 6.8 Analítica del grafo
+**GET** `/graph/analytics`
+
+```bash
+curl -X GET http://localhost:8080/api/graph/analytics
+```
+
+## 7. Manejo de errores
+
+### 7.1 Error de validación (400)
 ```json
 {
   "timestamp": "2026-04-20T10:30:00",
@@ -181,7 +287,7 @@ curl -X DELETE http://localhost:8080/api/temas/tema3
 }
 ```
 
-### Recurso No Encontrado (404 Not Found)
+### 7.2 Recurso no encontrado (404)
 ```json
 {
   "timestamp": "2026-04-20T10:30:00",
@@ -190,7 +296,7 @@ curl -X DELETE http://localhost:8080/api/temas/tema3
 }
 ```
 
-### Error Interno del Servidor (500 Internal Server Error)
+### 7.3 Error interno del servidor (500)
 ```json
 {
   "timestamp": "2026-04-20T10:30:00",
@@ -199,52 +305,31 @@ curl -X DELETE http://localhost:8080/api/temas/tema3
 }
 ```
 
----
+## 8. Resumen de endpoints
 
-## Cambios Realizados
+### Tecnologías
+- `GET /tecnologias`
+- `GET /tecnologias/{nombre}`
+- `GET /tecnologias/buscar/tema/{tema}`
+- `POST /tecnologias`
+- `POST /tecnologias/crear-con-relaciones`
+- `PUT /tecnologias/{nombre}`
+- `DELETE /tecnologias/{nombre}`
 
-### ✅ CRUD Completo
-- **Tecnologias**: GET (todas), GET (por nombre), GET (por tema), POST, PUT, DELETE
-- **Temas**: GET (todos), GET (por id), POST, PUT, DELETE
+### Temas
+- `GET /temas`
+- `GET /temas/{id}`
+- `POST /temas`
+- `PUT /temas/{id}`
+- `DELETE /temas/{id}`
 
-### ✅ Validación y Manejo de Errores
-- Validaciones de entrada con `@Valid` y `jakarta.validation`
-- `GlobalExceptionHandler` para manejo centralizado de excepciones
-- Respuestas de error estructuradas y consistentes
-- DTOs para separar la capa de API de las entidades
+### Grafo
+- `GET /graph`
+- `GET /graph/stats`
+- `GET /graph/node/{nodeId}`
+- `GET /graph/path`
+- `GET /graph/search`
+- `GET /graph/recommendations`
+- `GET /graph/complementa`
+- `GET /graph/analytics`
 
-### ✅ Mappers
-- `TecnologiaMapper`: Convierte entre Entidad y DTO
-- `TemaMapper`: Convierte entre Entidad y DTO
-
-### ✅ Mejoras en Servicios
-- Métodos CRUD en ambos servicios
-- Lanzamiento de excepciones apropiadas
-
-### ✅ Estructura de Carpetas
-```
-backend/
-├── src/main/java/com/G35/backend/
-│   ├── config/
-│   │   ├── Neo4jSeedRunner.java
-│   │   └── GlobalExceptionHandler.java  (NUEVO)
-│   ├── tecnologias/
-│   │   ├── Tecnologia.java             (ACTUALIZADO)
-│   │   ├── TecnologiaController.java   (ACTUALIZADO)
-│   │   ├── TecnologiaService.java      (ACTUALIZADO)
-│   │   ├── TecnologiaRepository.java
-│   │   ├── dto/
-│   │   │   └── TecnologiaDTO.java      (NUEVO)
-│   │   └── mapper/
-│   │       └── TecnologiaMapper.java   (NUEVO)
-│   ├── temas/
-│   │   ├── Tema.java                   (ACTUALIZADO)
-│   │   ├── TemaController.java         (ACTUALIZADO)
-│   │   ├── TemaService.java            (ACTUALIZADO)
-│   │   ├── TemaRepository.java
-│   │   ├── dto/
-│   │   │   └── TemaDTO.java            (NUEVO)
-│   │   └── mapper/
-│   │       └── TemaMapper.java         (NUEVO)
-│   └── BackendApplication.java
-```

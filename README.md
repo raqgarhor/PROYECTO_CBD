@@ -1,175 +1,83 @@
-# G35 Backend + Neo4j Explorer
+# PROYECTO_CBD - Explorador de Tecnologías con Grafo (Neo4j + Spring Boot + React)
 
-## Descripción
-Este proyecto modela tecnologias y temas en Neo4j y los expone por API REST con Spring Boot.
+## 1. Descripción general
+Este proyecto implementa una plataforma para modelar, consultar y visualizar tecnologías y temas académicos mediante un grafo en Neo4j.
 
-Tambien incluye una interfaz web (servida por el propio backend) para consultar y visualizar el grafo con un panel lateral de resultados, estilo explorador de nodos.
+La solución incluye:
+- Backend con API REST en Spring Boot.
+- Base de datos de grafos en Neo4j.
+- Frontend React para exploración visual, recomendaciones y gestión de nodos.
 
-## Contexto de la asignatura CBD
-El proyecto esta orientado a contenidos de la asignatura CBD (Complementos de Bases de Datos), donde se relacionan temas teoricos con tecnologias reales.
+## 2. Objetivo funcional
+Permitir que el usuario:
+1. Explore el grafo de tecnologías y temas.
+2. Obtenga recomendaciones por tema con ranking y razones.
+3. Analice relaciones complementarias.
+4. Cree nuevas tecnologías y las conecte dinámicamente en el grafo.
 
-Temas trabajados en el grafo:
-- Mineria de Datos
-- NoSQL
-- SIG / GIS
-- Blockchain
-- Data Warehouse
-- Bases de Datos Moviles
-- Web Semantica
-- Big Data
-- BBDD Distribuidas
-
-Tecnologias modeladas en el grafo (ejemplos):
-- Neo4j
-- Spring Boot
-- MongoDB
-- Redis
-- Apache Spark
-- Apache Jena
-- PostGIS
-- Ethereum
-- Couchbase
-- Snowflake
-
-## Stack
+## 3. Arquitectura
+### Backend
 - Java 17+
 - Spring Boot
 - Spring Data Neo4j
-- Neo4j
-- Frontend estatico en `resources/static`
 
-## Modelo de datos (resumen)
-- Nodo `Tech`: tecnologia (`nombre`, `categoria`)
-- Nodo `Tema`: tema de la asignatura (`id`, `nombre`)
-- Relacion `VISTO_EN`: `(:Tech)-[:VISTO_EN]->(:Tema)`
-- Relacion `SE_INTEGRA_CON`: `(:Tech)-[:SE_INTEGRA_CON]->(:Tech)`
+### Base de datos
+- Neo4j (Bolt)
+- Seed de datos con `backend/src/main/resources/data.cypher`
 
-## Requisitos
-- JDK 17 o superior
-- Maven 3.6+
-- Neo4j corriendo en `bolt://localhost:7687`
+### Frontend
+- React + Vite
+- Visualización con Cytoscape
 
-## Configuracion local
-1. Crea tu archivo local desde el ejemplo:
+## 4. Modelo de grafo (resumen)
+- Nodos:
+  - `Tech` (tecnologías)
+  - `Tema` (temas académicos)
 
-```bash
-# PowerShell
-Copy-Item backend/src/main/resources/application-example.properties backend/src/main/resources/application-local.properties
-```
+- Relaciones principales:
+  - `VISTO_EN`
+  - `SE_INTEGRA_CON`
+  - `COMPLEMENTA`
+  - `RELACIONADA_CON`
+  - `COMPITE_CON`
+  - `ES_ALTERNATIVA_A`
+  - `CONECTADO_POR`
 
-2. Ajusta credenciales en `backend/src/main/resources/application-local.properties`.
+## 5. Funcionalidades implementadas
+1. CRUD de tecnologías y temas.
+2. Consulta de grafo completo y subgrafos.
+3. Camino más corto entre nodos.
+4. Recomendaciones por tema con score y razones.
+5. Modo de relaciones `COMPLEMENTA`.
+6. Formulario para crear nuevas tecnologías y relaciones desde el frontend.
+7. Dashboard de analítica (importancia, nodos puente, clústeres).
 
-## Arranque rapido
-1. Levanta Neo4j (Desktop o Docker).
-2. Desde `backend`, arranca la app:
+## 6. Manuales del proyecto
+Para cumplir los requisitos de documentación, los manuales están separados en archivos Markdown:
 
-```bash
-mvn spring-boot:run "-Dspring.profiles.active=local"
-```
+- Manual de instalación y despliegue:
+  - [MANUAL_INSTALACION_DESPLIEGUE.md](MANUAL_INSTALACION_DESPLIEGUE.md)
 
-3. Abre en navegador:
-- Frontend: `http://localhost:8080/`
-- API tecnologias: `http://localhost:8080/api/tecnologias`
-- API temas: `http://localhost:8080/api/temas`
+- Manual de usuario:
+  - [MANUAL_USUARIO.md](MANUAL_USUARIO.md)
 
-## Seed de datos
-El seed se ejecuta al iniciar mediante `Neo4jSeedRunner`.
+## 7. API y documentación adicional
+- Guía de endpoints:
+  - [API_GUIDE.md](API_GUIDE.md)
 
-- Toggle: `app.seed.enabled=true|false` en `backend/src/main/resources/application.properties`
-- Script: `backend/src/main/resources/data.cypher`
+- Configuración de Neo4j:
+  - [NEO4J_CONFIG.md](NEO4J_CONFIG.md)
 
-Importante: el script actual comienza borrando el grafo completo (`MATCH (n) DETACH DELETE n;`).
-Si no quieres reinicializar datos en cada arranque, pon `app.seed.enabled=false`.
-
-## Endpoints disponibles
-
-### Tecnologías (CRUD Completo)
-- `GET /api/tecnologias` → Lista todas las tecnologías
-- `GET /api/tecnologias/{nombre}` → Obtiene una tecnología por nombre
-- `GET /api/tecnologias/buscar/tema/{tema}` → Filtra tecnologías por tema
-- `POST /api/tecnologias` → Crea una nueva tecnología
-- `PUT /api/tecnologias/{nombre}` → Actualiza una tecnología
-- `DELETE /api/tecnologias/{nombre}` → Elimina una tecnología
-
-### Temas (CRUD Completo)
-- `GET /api/temas` → Lista todos los temas
-- `GET /api/temas/{id}` → Obtiene un tema por id
-- `POST /api/temas` → Crea un nuevo tema
-- `PUT /api/temas/{id}` → Actualiza un tema
-- `DELETE /api/temas/{id}` → Elimina un tema
-
-**Consulta [API_GUIDE.md](./API_GUIDE.md) para ejemplos detallados con curl.**
-
-## Cambios Implementados (v0.0.2)
-
-### ✅ CRUD Completo
-- Operaciones POST, PUT, DELETE para Tecnologías y Temas
-- Métodos adicionales GET para recuperar recursos específicos
-
-### ✅ Validación de Entrada
-- Validaciones con `@Valid` y `jakarta.validation`
-- Restricciones en tamaño y contenido de campos
-- Mensajes de error claros y específicos
-
-### ✅ Manejo Centralizado de Errores
-- `GlobalExceptionHandler` para capturar excepciones
-- Respuestas de error estructuradas (timestamp, status, message, errors)
-- Distinción entre errores de validación (400), no encontrado (404) e internos (500)
-
-### ✅ DTOs (Data Transfer Objects)
-- `TecnologiaDTO` y `TemaDTO` separan la capa de API de las entidades
-- Mappers para conversión Entity ↔ DTO
-
-### ✅ Arquitectura Mejorada
-- Servicios robustos con lógica de negocio centralizada
-- Controllers enfocados en manejo de peticiones
-- Inyección de dependencias clara
-
-## Estructura principal
+## 8. Estructura del repositorio
 ```text
 backend/
-   src/main/java/com/G35/backend/
-      config/
-         Neo4jSeedRunner.java
-         GlobalExceptionHandler.java
-      tecnologias/
-         Tecnologia.java
-         TecnologiaController.java
-         TecnologiaService.java
-         TecnologiaRepository.java
-         dto/
-            TecnologiaDTO.java
-         mapper/
-            TecnologiaMapper.java
-      temas/
-         Tema.java
-         TemaController.java
-         TemaService.java
-         TemaRepository.java
-         dto/
-            TemaDTO.java
-         mapper/
-            TemaMapper.java
-      BackendApplication.java
-   src/main/resources/
-      application.properties
-      application-local.properties
-      data.cypher
-      static/
-         index.html
-         styles.css
-         app.js
-   pom.xml
+explorer-ui/
+README.md
+MANUAL_INSTALACION_DESPLIEGUE.md
+MANUAL_USUARIO.md
+API_GUIDE.md
+NEO4J_CONFIG.md
 ```
 
-## Problemas comunes
-- Puerto 8080 ocupado:
-
-```bash
-mvn spring-boot:run "-Dspring.profiles.active=local" "-Dspring-boot.run.arguments=--server.port=8081"
-```
-
-- No conecta a Neo4j:
-   - Verifica Neo4j encendido
-   - Verifica usuario/password en `application-local.properties`
-   - Verifica puerto Bolt `7687`
+## 9. Estado
+Proyecto orientado a implementación práctica para la asignatura CBD, con foco en visualización y recomendación sobre grafos.
