@@ -1,4 +1,4 @@
-# PROYECTO_CBD - Explorador de Tecnologías con Grafo (Neo4j + Spring Boot + React)
+# Explorador de Tecnologías con Grafo (Neo4j + Spring Boot + React)
 
 ## 1. Descripción general
 Este proyecto implementa una plataforma para modelar, consultar y visualizar tecnologías y temas académicos mediante un grafo en Neo4j.
@@ -61,12 +61,9 @@ Para cumplir los requisitos de documentación, los manuales están separados en 
 - Manual de usuario:
   - [MANUAL_USUARIO.md](MANUAL_USUARIO.md)
 
-## 7. API y documentación adicional
+## 7. API 
 - Guía de endpoints:
   - [API_GUIDE.md](API_GUIDE.md)
-
-- Configuración de Neo4j:
-  - [NEO4J_CONFIG.md](NEO4J_CONFIG.md)
 
 ## 8. Estructura del repositorio
 ```text
@@ -76,7 +73,6 @@ README.md
 MANUAL_INSTALACION_DESPLIEGUE.md
 MANUAL_USUARIO.md
 API_GUIDE.md
-NEO4J_CONFIG.md
 ```
 
 ## 9. Estado
