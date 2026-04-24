@@ -1,5 +1,8 @@
 package com.G35.backend.tecnologias.dto;
 
+import java.util.List;
+
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -11,7 +14,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TecnologiaDTO {
+public class CrearTecnologiaRequestDTO {
 
     @NotBlank(message = "El nombre de la tecnología no puede estar vacío")
     @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
@@ -24,4 +27,8 @@ public class TecnologiaDTO {
     @Size(max = 400, message = "La descripción no puede exceder 400 caracteres")
     private String descripcion;
 
+    private String temaId;
+
+    @Valid
+    private List<RelacionInputDTO> relaciones;
 }

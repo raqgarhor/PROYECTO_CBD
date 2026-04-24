@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import com.G35.backend.graph.dto.AnalyticsDTO;
 import com.G35.backend.graph.dto.GraphResponseDTO;
 import com.G35.backend.graph.dto.PathResultDTO;
+import com.G35.backend.graph.dto.RecommendationResponseDTO;
 import com.G35.backend.graph.service.GraphService;
 
 @RestController
@@ -44,7 +45,7 @@ public class GraphController {
     }
 
     @GetMapping("/recommendations")
-    public ResponseEntity<GraphResponseDTO> getRecommendations(@RequestParam String temaId) {
+    public ResponseEntity<RecommendationResponseDTO> getRecommendations(@RequestParam String temaId) {
         return ResponseEntity.ok(graphService.getRecommendations(temaId));
     }
 

@@ -9,8 +9,10 @@ import PathFinderPanel from './components/PathFinderPanel';
 import RecommendationPanel from './components/RecommendationPanel';
 import ComplementaPanel from './components/ComplementaPanel';
 import AnalyticsPanel from './components/AnalyticsPanel';
+import CreateTechnologyPanel from './components/CreateTechnologyPanel';
 
 const API_URL = 'http://localhost:8080/api/graph';
+const API_TECH_URL = 'http://localhost:8080/api/tecnologias';
 
 function App() {
   const [graphData, setGraphData] = useState({ nodes: [], edges: [] });
@@ -22,6 +24,7 @@ function App() {
   const [onlyBridgeNodes, setOnlyBridgeNodes] = useState(false);
   const [analytics, setAnalytics] = useState(null);
   const [activeMode, setActiveMode] = useState('explore');
+  const [recommendationItems, setRecommendationItems] = useState([]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/immutability
@@ -56,6 +59,7 @@ function App() {
   const resetGraph = () => {
     setGraphData(baseGraphData);
     setActiveMode('explore');
+    setRecommendationItems([]);
   };
 
   const handleNodeSelect = async (nodeData) => {
@@ -103,7 +107,8 @@ function App() {
         throw new Error('No se pudieron cargar recomendaciones');
       }
       const result = await response.json();
-      setGraphData(result);
+      setGraphData(result.graph || { nodes: [], edges: [] });
+      setRecommendationItems(result.recommendations || []);
       setActiveMode('recommendations');
     } catch (error) {
       console.error(error);
@@ -176,6 +181,32 @@ function App() {
     }
   };
 
+  const handleCreateTechnology = async (payload) => {
+    try {
+      const response = await fetch(`${API_TECH_URL}/crear-con-relaciones`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        throw new Error(errorBody.message || 'No se pudo crear la tecnología');
+      }
+
+      await loadInitialData();
+      setActiveMode('explore');
+      alert('Tecnología creada y grafo actualizado.');
+      return true;
+    } catch (error) {
+      console.error(error);
+      alert(error.message || 'Error al crear la tecnología');
+      return false;
+    }
+  };
+
   return (
     <div className="app">
       <header className="topbar">
@@ -245,6 +276,7 @@ function App() {
           <RecommendationPanel
             onLoadRecommendations={handleRecommendationsLoaded}
             onReset={resetGraph}
+            recommendations={recommendationItems}
           />
 
           <ComplementaPanel
@@ -252,6 +284,11 @@ function App() {
             onReset={resetGraph}
             nodes={baseGraphData.nodes}
             edges={baseGraphData.edges}
+          />
+
+          <CreateTechnologyPanel
+            nodes={baseGraphData.nodes}
+            onCreateTechnology={handleCreateTechnology}
           />
         </aside>
 

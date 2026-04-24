@@ -14,7 +14,8 @@ public class TecnologiaMapper {
         }
         return new TecnologiaDTO(
                 tecnologia.getNombre(),
-                tecnologia.getCategoria());
+            tecnologia.getCategoria(),
+            tecnologia.getDescripcion());
     }
 
     public Tecnologia toEntity(TecnologiaDTO dto) {
@@ -24,6 +25,7 @@ public class TecnologiaMapper {
         Tecnologia tecnologia = new Tecnologia();
         tecnologia.setNombre(dto.getNombre());
         tecnologia.setCategoria(dto.getCategoria());
+        tecnologia.setDescripcion(dto.getDescripcion());
         return tecnologia;
     }
 

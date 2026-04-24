@@ -14,6 +14,7 @@ import com.G35.backend.graph.dto.CytoscapeEdgeDTO;
 import com.G35.backend.graph.dto.CytoscapeNodeDTO;
 import com.G35.backend.graph.dto.GraphResponseDTO;
 import com.G35.backend.graph.dto.PathResultDTO;
+import com.G35.backend.graph.dto.RecommendationResponseDTO;
 import com.G35.backend.graph.repository.GraphRepository;
 
 @Service
@@ -103,14 +104,33 @@ public class GraphService {
         return graphRepository.getSubgraphByNodeIds(ids);
     }
 
-    public GraphResponseDTO getRecommendations(String temaId) {
-        List<String> ids = graphRepository.getRecommendationsByTema(temaId);
+    public RecommendationResponseDTO getRecommendations(String temaId) {
+        List<Map<String, Object>> ranked = graphRepository.getRankedRecommendationsByTema(temaId);
 
-        if (ids.isEmpty()) {
-            return new GraphResponseDTO(Collections.emptyList(), Collections.emptyList());
+        if (ranked.isEmpty()) {
+            return new RecommendationResponseDTO(
+                    temaId,
+                    new GraphResponseDTO(Collections.emptyList(), Collections.emptyList()),
+                    Collections.emptyList());
         }
 
-        return graphRepository.getSubgraphByNodeIds(ids);
+        List<RecommendationResponseDTO.RecommendationItemDTO> recommendations = ranked.stream()
+                .map(row -> new RecommendationResponseDTO.RecommendationItemDTO(
+                        asString(row.get("id")),
+                        asString(row.get("nombre")),
+                        asString(row.get("categoria")),
+                        toDouble(row.get("score")),
+                        safeStringList(row.get("razones"))))
+                .toList();
+
+        List<String> ids = recommendations.stream()
+                .map(RecommendationResponseDTO.RecommendationItemDTO::getId)
+                .distinct()
+                .toList();
+
+        GraphResponseDTO graph = graphRepository.getSubgraphByNodeIds(ids);
+
+        return new RecommendationResponseDTO(temaId, graph, recommendations);
     }
 
     public GraphResponseDTO getComplementaGraph() {

@@ -209,26 +209,45 @@ public class GraphRepository {
         }
     }
 
-    public List<String> getRecommendationsByTema(String temaId) {
+    public List<Map<String, Object>> getRankedRecommendationsByTema(String temaId) {
         try (Session session = driver.session()) {
             Result result = session.run(
                     """
                             MATCH (tema:Tema {id: $temaId})<-[:VISTO_EN]-(tech:Tech)
-                            OPTIONAL MATCH (tech)-[:SE_INTEGRA_CON]-(related:Tech)
-                            RETURN collect(DISTINCT CASE WHEN tech.nombre IS NOT NULL THEN tech.nombre ELSE tech.id END) +
-                                   collect(DISTINCT CASE WHEN related.nombre IS NOT NULL THEN related.nombre ELSE related.id END) +
-                                   collect(DISTINCT tema.nombre) AS ids
+                            OPTIONAL MATCH (tech)-[:SE_INTEGRA_CON]-(integrated:Tech)
+                            WITH tema, tech, count(DISTINCT integrated) AS integrationsCount
+                            OPTIONAL MATCH (tech)-[:COMPLEMENTA]-(complementary:Tech)
+                            WITH tema, tech, integrationsCount, count(DISTINCT complementary) AS complementaCount
+                            OPTIONAL MATCH (tech)-[:VISTO_EN]->(otherTema:Tema)
+                            WITH tema, tech, integrationsCount, complementaCount, count(DISTINCT otherTema) AS temasCount
+                            WITH tech,
+                                 integrationsCount,
+                                 complementaCount,
+                                 temasCount,
+                                 (
+                                     10.0 +
+                                     (integrationsCount * 2.0) +
+                                     (complementaCount * 1.5) +
+                                     CASE WHEN temasCount > 1 THEN 1.0 ELSE 0.0 END
+                                 ) AS score
+                            RETURN {
+                                id: CASE WHEN tech.nombre IS NOT NULL THEN tech.nombre ELSE tech.id END,
+                                nombre: CASE WHEN tech.nombre IS NOT NULL THEN tech.nombre ELSE tech.id END,
+                                categoria: coalesce(tech.categoria, 'Tech'),
+                                score: score,
+                                razones: [
+                                    'Pertenece al tema seleccionado',
+                                    'Se integra con ' + toString(integrationsCount) + ' tecnologías',
+                                    'Tiene ' + toString(complementaCount) + ' relaciones COMPLEMENTA',
+                                    'Aparece en ' + toString(temasCount) + ' tema(s)'
+                                ]
+                            } AS result
+                            ORDER BY result.score DESC
+                            LIMIT 10
                             """,
                     Map.of("temaId", temaId));
 
-            if (!result.hasNext()) {
-                return Collections.emptyList();
-            }
-
-            return result.next().get("ids").asList().stream()
-                    .map(String::valueOf)
-                    .distinct()
-                    .toList();
+            return result.list(record -> record.get("result").asMap());
         }
     }
 

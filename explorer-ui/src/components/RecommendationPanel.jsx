@@ -14,7 +14,7 @@ const themes = [
   { id: '10', label: 'BBDD Distribuidas' }
 ];
 
-const RecommendationPanel = ({ onLoadRecommendations, onReset }) => {
+const RecommendationPanel = ({ onLoadRecommendations, onReset, recommendations = [] }) => {
   const [selectedTheme, setSelectedTheme] = useState('');
 
   return (
@@ -50,6 +50,24 @@ const RecommendationPanel = ({ onLoadRecommendations, onReset }) => {
           Reset
         </button>
       </div>
+
+      {recommendations.length > 0 && (
+        <div className="analytics-section" style={{ marginTop: '0.8rem' }}>
+          <h4>Top recomendadas</h4>
+          <div className="analytics-list">
+            {recommendations.slice(0, 5).map((item) => (
+              <div key={item.id} className="analytics-item">
+                <div>
+                  <strong>{item.nombre}</strong>
+                  <small>{item.categoria}</small>
+                  <small>{(item.razones || []).slice(0, 2).join(' · ')}</small>
+                </div>
+                <span>{Number(item.score || 0).toFixed(1)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

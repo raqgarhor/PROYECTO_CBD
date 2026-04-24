@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.G35.backend.tecnologias.dto.TecnologiaDTO;
+import com.G35.backend.tecnologias.dto.CrearTecnologiaRequestDTO;
 import com.G35.backend.tecnologias.mapper.TecnologiaMapper;
 
 import jakarta.validation.Valid;
@@ -59,6 +60,13 @@ public class TecnologiaController {
     public ResponseEntity<TecnologiaDTO> crear(@Valid @RequestBody TecnologiaDTO dto) {
         Tecnologia tecnologia = tecnologiaMapper.toEntity(dto);
         Tecnologia creada = tecnologiaService.crear(tecnologia);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(tecnologiaMapper.toDTO(creada));
+    }
+
+    @PostMapping("/crear-con-relaciones")
+    public ResponseEntity<TecnologiaDTO> crearConRelaciones(@Valid @RequestBody CrearTecnologiaRequestDTO dto) {
+        Tecnologia creada = tecnologiaService.crearConRelaciones(dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(tecnologiaMapper.toDTO(creada));
     }

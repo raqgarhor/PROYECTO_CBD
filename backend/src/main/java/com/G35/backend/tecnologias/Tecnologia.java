@@ -31,6 +31,9 @@ public class Tecnologia {
     @Size(min = 2, max = 50, message = "La categoría debe tener entre 2 y 50 caracteres")
     private String categoria;
 
+    @Size(max = 400, message = "La descripción no puede exceder 400 caracteres")
+    private String descripcion;
+
     @Relationship(type = "VISTO_EN", direction = Relationship.Direction.OUTGOING)
     private Set<Tema> temas;
 
