@@ -58,4 +58,30 @@ public class GraphController {
     public ResponseEntity<AnalyticsDTO> getAnalytics() {
         return ResponseEntity.ok(graphService.getAnalytics());
     }
+
+    @PostMapping("/temas")
+    public ResponseEntity<AnalyticsDTO.NodeDetailsDTO> createTema(@RequestBody TemaRequest request) {
+        return ResponseEntity.ok(graphService.createTema(request.getNombre(), request.getDescripcion()));
+    }
+
+    public static class TemaRequest {
+        private String nombre;
+        private String descripcion;
+
+        public String getNombre() {
+            return nombre;
+        }
+
+        public void setNombre(String nombre) {
+            this.nombre = nombre;
+        }
+
+        public String getDescripcion() {
+            return descripcion;
+        }
+
+        public void setDescripcion(String descripcion) {
+            this.descripcion = descripcion;
+        }
+    }
 }

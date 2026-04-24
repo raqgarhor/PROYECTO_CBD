@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useMemo, useState } from 'react';
 import '../styles/ToolPanel.css';
 
@@ -19,8 +20,17 @@ const CreateTechnologyPanel = ({ nodes = [], onCreateTechnology }) => {
   const [relationTarget, setRelationTarget] = useState('');
   const [relaciones, setRelaciones] = useState([]);
 
-  const { temas, tecnologias } = useMemo(() => {
+  const [mostrarCrearTema, setMostrarCrearTema] = useState(false);
+  const [nuevoTemaNombre, setNuevoTemaNombre] = useState('');
+  const [nuevoTemaDescripcion, setNuevoTemaDescripcion] = useState('');
+  const [nuevoTemaPendiente, setNuevoTemaPendiente] = useState('');
+
+  const [mostrarCrearCategoria, setMostrarCrearCategoria] = useState(false);
+  const [nuevaCategoriaNombre, setNuevaCategoriaNombre] = useState('');
+
+  const { temas, tecnologias, categorias } = useMemo(() => {
     const data = (nodes || []).map((node) => node?.data ?? node);
+
     const temasList = data
       .filter((item) => item?.category === 'Tema')
       .map((item) => ({ id: item.id, label: item.label }))
@@ -31,7 +41,19 @@ const CreateTechnologyPanel = ({ nodes = [], onCreateTechnology }) => {
       .map((item) => ({ id: item.id, label: item.label }))
       .sort((a, b) => a.label.localeCompare(b.label));
 
-    return { temas: temasList, tecnologias: techList };
+    const categoriasList = [
+      ...new Set(
+        data
+          .filter((item) => item?.category !== 'Tema' && item?.category)
+          .map((item) => item.category)
+      )
+    ].sort();
+
+    return {
+      temas: temasList,
+      tecnologias: techList,
+      categorias: categoriasList
+    };
   }, [nodes]);
 
   const addRelation = () => {
@@ -60,30 +82,62 @@ const CreateTechnologyPanel = ({ nodes = [], onCreateTechnology }) => {
     setCategoria('');
     setDescripcion('');
     setTemaId('');
+    setNuevoTemaPendiente('');
+    setNuevoTemaNombre('');
+    setNuevoTemaDescripcion('');
+    setMostrarCrearTema(false);
     setRelationType('SE_INTEGRA_CON');
     setRelationTarget('');
     setRelaciones([]);
   };
 
-  const handleSubmit = async () => {
-    if (!nombre.trim() || !categoria.trim()) {
-      alert('Nombre y categoría son obligatorios.');
-      return;
+const handleSubmit = async () => {
+  if (!nombre.trim() || !categoria.trim()) {
+    alert('Nombre y categoría son obligatorios.');
+    return;
+  }
+
+  let finalTemaId = temaId || null;
+
+  try {
+    if (nuevoTemaPendiente) {
+      finalTemaId = nuevoTemaPendiente.trim();
+
+      const temaResponse = await fetch('http://localhost:8080/api/graph/temas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          nombre: nuevoTemaPendiente.trim(),
+          descripcion: nuevoTemaDescripcion.trim()
+        })
+      });
+
+      if (!temaResponse.ok) {
+        alert('Error al crear el tema');
+        return;
+      }
     }
 
     const payload = {
       nombre: nombre.trim(),
       categoria: categoria.trim(),
       descripcion: descripcion.trim(),
-      temaId: temaId || null,
+      temaId: finalTemaId,
       relaciones
     };
 
     const ok = await onCreateTechnology(payload);
+
     if (ok) {
       resetForm();
     }
-  };
+  } catch (error) {
+    console.error(error);
+    alert('Error al crear la tecnología');
+  }
+};
 
   return (
     <div className="tool-panel">
@@ -102,13 +156,71 @@ const CreateTechnologyPanel = ({ nodes = [], onCreateTechnology }) => {
       />
 
       <label className="filter-label">Categoría</label>
-      <input
-        className="filter-select"
-        type="text"
-        value={categoria}
-        onChange={(e) => setCategoria(e.target.value)}
-        placeholder="Ej: Search / NoSQL"
-      />
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+        <select
+          className="filter-select tema-select"
+          value={categoria}
+          onChange={(e) => setCategoria(e.target.value)}
+          style={{ flex: 1 }}
+        >
+          <option value="">Selecciona categoría</option>
+          {categorias.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
+
+        <button
+          className="secondary-btn"
+          type="button"
+          onClick={() => setMostrarCrearCategoria(!mostrarCrearCategoria)}
+          style={{ padding: '0.5rem 1rem' }}
+        >
+          {mostrarCrearCategoria ? '✕' : '➕'}
+        </button>
+      </div>
+
+      {categoria && !categorias.includes(categoria) && (
+        <small
+          style={{
+            color: '#ff9800',
+            marginTop: '-0.25rem',
+            display: 'block',
+            marginBottom: '0.5rem'
+          }}
+        >
+          ➕ Nueva categoría: "{categoria}"
+        </small>
+      )}
+
+      {mostrarCrearCategoria && (
+        <div className="crear-tema-form">
+          <label className="filter-label">Nombre de la nueva categoría</label>
+          <input
+            className="filter-select"
+            type="text"
+            value={nuevaCategoriaNombre}
+            onChange={(e) => setNuevaCategoriaNombre(e.target.value)}
+            placeholder="Ej: Machine Learning"
+          />
+
+          <button
+            className="primary-btn"
+            type="button"
+            onClick={() => {
+              if (nuevaCategoriaNombre.trim()) {
+                setCategoria(nuevaCategoriaNombre.trim());
+                setNuevaCategoriaNombre('');
+                setMostrarCrearCategoria(false);
+              }
+            }}
+            style={{ width: '100%', marginTop: '0.5rem' }}
+          >
+            Usar categoría
+          </button>
+        </div>
+      )}
 
       <label className="filter-label">Descripción</label>
       <input
@@ -120,18 +232,83 @@ const CreateTechnologyPanel = ({ nodes = [], onCreateTechnology }) => {
       />
 
       <label className="filter-label">Tema</label>
-      <select
-        className="filter-select"
-        value={temaId}
-        onChange={(e) => setTemaId(e.target.value)}
-      >
-        <option value="">Sin tema</option>
-        {temas.map((tema) => (
-          <option key={tema.id} value={tema.id}>
-            {tema.label}
-          </option>
-        ))}
-      </select>
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+        <select
+          className="filter-select tema-select"
+          value={temaId}
+          onChange={(e) => {
+            setTemaId(e.target.value);
+            setNuevoTemaPendiente('');
+          }}
+          style={{ flex: 1 }}
+        >
+          <option value="">Sin tema</option>
+          {temas.map((tema) => (
+            <option key={tema.id} value={tema.id}>
+              {tema.label}
+            </option>
+          ))}
+        </select>
+
+        <button
+          className="secondary-btn"
+          type="button"
+          onClick={() => setMostrarCrearTema(!mostrarCrearTema)}
+          style={{ padding: '0.5rem 1rem' }}
+        >
+          {mostrarCrearTema ? '✕' : '➕'}
+        </button>
+      </div>
+
+      {nuevoTemaPendiente && (
+        <small
+          style={{
+            color: '#ff9800',
+            marginTop: '-0.25rem',
+            display: 'block',
+            marginBottom: '0.5rem'
+          }}
+        >
+          ➕ Nuevo tema: "{nuevoTemaPendiente}"
+        </small>
+      )}
+
+      {mostrarCrearTema && (
+        <div className="crear-tema-form">
+          <label className="filter-label">Nombre del nuevo tema</label>
+          <input
+            className="filter-select"
+            type="text"
+            value={nuevoTemaNombre}
+            onChange={(e) => setNuevoTemaNombre(e.target.value)}
+            placeholder="Ej: Arquitectura"
+          />
+
+          <label className="filter-label">Descripción (opcional)</label>
+          <input
+            className="filter-select"
+            type="text"
+            value={nuevoTemaDescripcion}
+            onChange={(e) => setNuevoTemaDescripcion(e.target.value)}
+            placeholder="Breve descripción del tema"
+          />
+
+          <button
+            className="primary-btn"
+            type="button"
+            onClick={() => {
+              if (nuevoTemaNombre.trim()) {
+                setNuevoTemaPendiente(nuevoTemaNombre.trim());
+                setTemaId('');
+                setMostrarCrearTema(false);
+              }
+            }}
+            style={{ width: '100%', marginTop: '0.5rem' }}
+          >
+            Usar tema
+          </button>
+        </div>
+      )}
 
       <label className="filter-label">Relación</label>
       <select
@@ -171,10 +348,26 @@ const CreateTechnologyPanel = ({ nodes = [], onCreateTechnology }) => {
       {relaciones.length > 0 && (
         <div className="overview-list" style={{ maxHeight: '140px' }}>
           {relaciones.map((rel, idx) => (
-            <div key={`${rel.tipo}-${rel.destino}-${idx}`} className="overview-item" style={{ padding: '0.55rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem' }}>
-                <span>{rel.tipo} → {rel.destino}</span>
-                <button type="button" className="secondary-btn" onClick={() => removeRelation(idx)}>
+            <div
+              key={`${rel.tipo}-${rel.destino}-${idx}`}
+              className="overview-item"
+              style={{ padding: '0.55rem' }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: '0.5rem'
+                }}
+              >
+                <span>
+                  {rel.tipo} → {rel.destino}
+                </span>
+                <button
+                  type="button"
+                  className="secondary-btn"
+                  onClick={() => removeRelation(idx)}
+                >
                   Quitar
                 </button>
               </div>

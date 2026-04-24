@@ -1,21 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import '../styles/ToolPanel.css';
 
-const themes = [
-  { id: '01', label: 'Minería de Datos' },
-  { id: '02', label: 'NoSQL' },
-  { id: '03', label: 'SIG / GIS' },
-  { id: '04', label: 'Ingeniería Inversa' },
-  { id: '05', label: 'Blockchain' },
-  { id: '06', label: 'Data Warehouse' },
-  { id: '07', label: 'Bases de Datos Móviles' },
-  { id: '08', label: 'La Web Semántica' },
-  { id: '09', label: 'Big Data' },
-  { id: '10', label: 'BBDD Distribuidas' }
-];
-
-const RecommendationPanel = ({ onLoadRecommendations, onReset, recommendations = [] }) => {
+const RecommendationPanel = ({ nodes = [], onLoadRecommendations, onReset, recommendations = [] }) => {
   const [selectedTheme, setSelectedTheme] = useState('');
+
+  const themes = useMemo(() => {
+    // Filtrar temas del grafo
+    const data = (nodes || []).map((node) => node?.data ?? node);
+    return data
+      .filter((item) => item?.category === 'Tema')
+      .map((item) => ({ id: item.id, label: item.label }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [nodes]);
 
   return (
     <div className="tool-panel">

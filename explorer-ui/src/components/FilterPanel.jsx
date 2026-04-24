@@ -1,40 +1,22 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import '../styles/FilterPanel.css';
-
-const categories = [
-  'all',
-  'Tema',
-  'Backend',
-  'Grafos',
-  'Blockchain',
-  'Documental',
-  'Clave-Valor',
-  'Columnar',
-  'SGBD espacial',
-  'Herramienta SIG',
-  'SIG SaaS',
-  'SIG DaaS',
-  'Modelado de datos',
-  'Plataforma blockchain',
-  'BaaS',
-  'Máquina virtual',
-  'ETL libre',
-  'ETL propietario',
-  'SGBD móvil',
-  'Componente SQL Anywhere',
-  'Motor embebido móvil',
-  'Sincronización móvil',
-  'Base de datos orientada a objetos',
-  'NoSQL en la nube',
-  'Base de datos embebida'
-];
 
 const FilterPanel = ({
   onFilterChange,
   selectedFilter,
   onlyBridgeNodes,
-  onToggleBridgeNodes
+  onToggleBridgeNodes,
+  nodes = []
 }) => {
+  const categories = useMemo(() => {
+    const data = (nodes || []).map((node) => node?.data ?? node);
+    const categoriasList = ['all', ...new Set(
+      data
+        .filter((item) => item?.category !== 'Tema' && item?.category)
+        .map((item) => item.category)
+    )].sort();
+    return categoriasList;
+  }, [nodes]);
   return (
     <div className="filter-panel">
       <div className="panel-header">

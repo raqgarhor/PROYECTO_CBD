@@ -456,4 +456,21 @@ public class GraphRepository {
             return result.list(record -> record.get("result").asMap());
         }
     }
+
+    public Map<String, Object> createTema(String nombre, String descripcion) {
+        try (Session session = driver.session()) {
+            Result result = session.run("""
+                    MERGE (t:Tema {id: $nombre, nombre: $nombre, descripcion: $descripcion, categoria: 'Tema'})
+                    RETURN {
+                        id: t.nombre,
+                        label: t.nombre,
+                        category: 'Tema',
+                        connections: 0,
+                        importance: 0.0,
+                        isPuente: false
+                    } AS result
+                    """, Map.of("nombre", nombre, "descripcion", descripcion));
+            return result.single().get("result").asMap();
+        }
+    }
 }

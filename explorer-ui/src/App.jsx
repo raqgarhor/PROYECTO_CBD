@@ -10,6 +10,7 @@ import RecommendationPanel from './components/RecommendationPanel';
 import ComplementaPanel from './components/ComplementaPanel';
 import AnalyticsPanel from './components/AnalyticsPanel';
 import CreateTechnologyPanel from './components/CreateTechnologyPanel';
+import logo from './assets/logo.png';
 
 const API_URL = 'http://localhost:8080/api/graph';
 const API_TECH_URL = 'http://localhost:8080/api/tecnologias';
@@ -222,11 +223,16 @@ function App() {
     }
   };
 
+  const handleTemaCreated = async () => {
+    // Recargar datos después de crear un tema
+    await loadInitialData();
+  };
+
   return (
     <div className="app">
       <header className="topbar">
         <div className="brand-box">
-          <div className="brand-logo">✦</div>
+          <img src={logo} alt="TechGraph Explorer logo" className="brand-logo-img" />
           <div>
             <h1>TechGraph Explorer</h1>
             <p>Explora, conecta, descubre</p>
@@ -271,6 +277,7 @@ function App() {
                   onFilterChange={setSelectedFilter}
                   onlyBridgeNodes={onlyBridgeNodes}
                   onToggleBridgeNodes={setOnlyBridgeNodes}
+                  nodes={baseGraphData.nodes}
                 />
               </CollapsiblePanel>
 
@@ -288,6 +295,7 @@ function App() {
             <>
               <CollapsiblePanel title="Recomendaciones" subtitle="Ranking por tema" defaultOpen>
                 <RecommendationPanel
+                  nodes={baseGraphData.nodes}
                   onLoadRecommendations={handleRecommendationsLoaded}
                   onReset={resetGraph}
                   recommendations={recommendationItems}
@@ -310,6 +318,7 @@ function App() {
               <CreateTechnologyPanel
                 nodes={baseGraphData.nodes}
                 onCreateTechnology={handleCreateTechnology}
+                onTemaCreated={handleTemaCreated}
               />
             </CollapsiblePanel>
           )}

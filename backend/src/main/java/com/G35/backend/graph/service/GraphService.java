@@ -233,4 +233,22 @@ public class GraphService {
         }
         return result.stream().distinct().toList();
     }
+
+    public AnalyticsDTO.NodeDetailsDTO createTema(String nombre, String descripcion) {
+        Map<String, Object> result = graphRepository.createTema(nombre, descripcion);
+
+        if (result == null || result.isEmpty()) {
+            throw new RuntimeException("No se pudo crear el tema");
+        }
+
+        return new AnalyticsDTO.NodeDetailsDTO(
+                asString(result.get("id")),
+                asString(result.get("label")),
+                "Tema",
+                "Tema",
+                toInt(result.get("connections")),
+                toDouble(result.get("importance")),
+                Collections.emptyList(),
+                Collections.emptyList());
+    }
 }

@@ -6,8 +6,6 @@ import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
-import com.G35.backend.temas.Tema;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -33,9 +31,6 @@ public class Tecnologia {
 
     @Size(max = 400, message = "La descripción no puede exceder 400 caracteres")
     private String descripcion;
-
-    @Relationship(type = "VISTO_EN", direction = Relationship.Direction.OUTGOING)
-    private Set<Tema> temas;
 
     @Relationship(type = "SE_INTEGRA_CON", direction = Relationship.Direction.OUTGOING)
     private Set<Tecnologia> compatibles;

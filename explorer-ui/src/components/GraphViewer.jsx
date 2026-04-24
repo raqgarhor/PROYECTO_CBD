@@ -42,6 +42,15 @@ const GraphViewer = ({
 }) => {
   const containerRef = useRef(null);
   const cyRef = useRef(null);
+  const positionsRef = useRef(null);
+  const isFirstLoadRef = useRef(true);
+  const selectedNodeRef = useRef(null);
+  const selectedNodeIdRef = useRef(null);
+  const onNodeSelectRef = useRef(onNodeSelect);
+
+  useEffect(() => {
+    onNodeSelectRef.current = onNodeSelect;
+  }, [onNodeSelect]);
 
   const elements = useMemo(() => {
     const nodes = (graphData.nodes || []).map((node) => ({
@@ -76,6 +85,17 @@ const GraphViewer = ({
     if (!containerRef.current) return;
 
     if (cyRef.current) {
+      if (cyRef.current.elements().length > 0) {
+        const positions = {};
+        cyRef.current.nodes().forEach(node => {
+          positions[node.id()] = { x: node.position('x'), y: node.position('y') };
+        });
+        positionsRef.current = positions;
+        
+        if (selectedNodeRef.current) {
+          selectedNodeIdRef.current = selectedNodeRef.current.id();
+        }
+      }
       cyRef.current.destroy();
       cyRef.current = null;
     }
@@ -85,16 +105,18 @@ const GraphViewer = ({
       elements,
       layout: {
         name: 'cose',
-        animate: true,
-        fit: true,
+        animate: isFirstLoadRef.current ? 'end' : false,
+        animationDuration: 800,
+        fit: isFirstLoadRef.current,
         padding: 48,
         nodeRepulsion: 900000,
         idealEdgeLength: 130,
         edgeElasticity: 100,
         gravity: 0.25,
-        numIter: 1600
+        numIter: isFirstLoadRef.current ? 1600 : 0,
+        randomize: false
       },
-      minZoom: 0.25,
+      minZoom: 0.05,
       maxZoom: 2.5,
       wheelSensitivity: 0.18,
       style: [
@@ -132,10 +154,25 @@ const GraphViewer = ({
         {
           selector: 'node:selected',
           style: {
-            'border-width': 4,
-            'border-color': '#ffffff',
-            'shadow-blur': 28,
-            'shadow-opacity': 0.8
+            'border-width': 6,
+            'border-color': '#fbbf24',
+            'shadow-blur': 35,
+            'shadow-color': '#fbbf24',
+            'shadow-opacity': 0.9,
+            'shadow-offset-x': 0,
+            'shadow-offset-y': 0
+          }
+        },
+        {
+          selector: 'node.node-kept-selected',
+          style: {
+            'border-width': 6,
+            'border-color': '#fbbf24',
+            'shadow-blur': 35,
+            'shadow-color': '#fbbf24',
+            'shadow-opacity': 0.9,
+            'shadow-offset-x': 0,
+            'shadow-offset-y': 0
           }
         },
         {
@@ -174,19 +211,41 @@ const GraphViewer = ({
     });
 
     cy.on('tap', 'node', (event) => {
+      event.stopPropagation();
+
       const node = event.target;
-      cy.elements().removeClass('highlighted');
-      cy.elements().addClass('faded');
 
-      node.removeClass('faded');
-      node.connectedEdges().removeClass('faded').addClass('highlighted');
-      node.neighborhood().removeClass('faded');
+      if (selectedNodeRef.current) {
+        selectedNodeRef.current.removeClass('node-kept-selected');
+      }
 
-      onNodeSelect(node.data());
+      node.addClass('node-kept-selected');
+      selectedNodeRef.current = node;
+      selectedNodeIdRef.current = node.id();
+
+      const zoomLevel = 1.5;
+      const pos = node.position();
+
+      cy.animate({
+        zoom: zoomLevel,
+        pan: {
+          x: cy.width() / 2 - pos.x * zoomLevel,
+          y: cy.height() / 2 - pos.y * zoomLevel
+        },
+        duration: 400,
+        easing: 'ease-in-out'
+      });
+
+      onNodeSelectRef.current(node.data());
     });
 
     cy.on('tap', (event) => {
       if (event.target === cy) {
+        if (selectedNodeRef.current) {
+          selectedNodeRef.current.removeClass('node-kept-selected');
+          selectedNodeRef.current = null;
+          selectedNodeIdRef.current = null;
+        }
         cy.elements().removeClass('faded highlighted');
         onNodeSelect(null);
       }
@@ -196,24 +255,50 @@ const GraphViewer = ({
 
     setTimeout(() => {
       cy.resize();
-      cy.fit(undefined, 50);
-      cy.center();
+      
+      if (isFirstLoadRef.current) {
+        cy.fit(undefined, 50);
+        cy.center();
+        cy.zoom(0.1);
+      } else {
+        cy.nodes().forEach(node => {
+          const savedPos = positionsRef.current?.[node.id()];
+          if (savedPos) {
+            node.position(savedPos);
+          }
+        });
+      }
+      
+      if (selectedNodeIdRef.current) {
+        const nodeToSelect = cy.getElementById(selectedNodeIdRef.current);
+        if (nodeToSelect && nodeToSelect.length > 0) {
+          nodeToSelect.addClass('node-kept-selected');
+          selectedNodeRef.current = nodeToSelect;
+        }
+      }
+      
+      isFirstLoadRef.current = false;
     }, 120);
 
     return () => {
       cy.destroy();
     };
-  }, [elements, onNodeSelect]);
+  }, [elements]);
 
   useEffect(() => {
     const cy = cyRef.current;
     if (!cy) return;
 
-    cy.elements().removeClass('faded highlighted');
+    const term = searchTerm.trim().toLowerCase();
+    const hasSearchFilter = term || filterCategory !== 'all' || onlyBridgeNodes || highlightMode === 'analytics';
+
+    if (!hasSearchFilter) {
+      cy.elements().removeClass('faded highlighted');
+      return;
+    }
 
     let matchedNodes = cy.nodes();
 
-    const term = searchTerm.trim().toLowerCase();
     if (term) {
       matchedNodes = matchedNodes.filter((node) =>
         String(node.data('label')).toLowerCase().includes(term) ||
@@ -235,21 +320,13 @@ const GraphViewer = ({
       matchedNodes = matchedNodes.filter((node) => node.data('isPuente') === true || node.data('connections') >= 4);
     }
 
-    if (!term && filterCategory === 'all' && !onlyBridgeNodes && highlightMode !== 'analytics') {
-      return;
-    }
-
-    cy.elements().addClass('faded');
+    cy.elements().removeClass('highlighted').addClass('faded');
 
     matchedNodes.forEach((node) => {
       node.removeClass('faded');
       node.connectedEdges().removeClass('faded').addClass('highlighted');
       node.neighborhood().removeClass('faded');
     });
-
-    if (matchedNodes.length > 0) {
-      cy.fit(matchedNodes, 100);
-    }
   }, [searchTerm, filterCategory, onlyBridgeNodes, highlightMode]);
 
   return (
