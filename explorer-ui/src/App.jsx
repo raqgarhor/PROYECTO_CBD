@@ -14,6 +14,16 @@ import CreateTechnologyPanel from './components/CreateTechnologyPanel';
 const API_URL = 'http://localhost:8080/api/graph';
 const API_TECH_URL = 'http://localhost:8080/api/tecnologias';
 
+const CollapsiblePanel = ({ title, subtitle, defaultOpen = false, children }) => (
+  <details className="left-accordion" open={defaultOpen}>
+    <summary>
+      <span>{title}</span>
+      {subtitle && <small>{subtitle}</small>}
+    </summary>
+    <div className="left-accordion-body">{children}</div>
+  </details>
+);
+
 function App() {
   const [graphData, setGraphData] = useState({ nodes: [], edges: [] });
   const [baseGraphData, setBaseGraphData] = useState({ nodes: [], edges: [] });
@@ -24,6 +34,7 @@ function App() {
   const [onlyBridgeNodes, setOnlyBridgeNodes] = useState(false);
   const [analytics, setAnalytics] = useState(null);
   const [activeMode, setActiveMode] = useState('explore');
+  const [activeTab, setActiveTab] = useState('explorar');
   const [recommendationItems, setRecommendationItems] = useState([]);
 
   useEffect(() => {
@@ -59,6 +70,7 @@ function App() {
   const resetGraph = () => {
     setGraphData(baseGraphData);
     setActiveMode('explore');
+    setActiveTab('explorar');
     setRecommendationItems([]);
   };
 
@@ -110,6 +122,7 @@ function App() {
       setGraphData(result.graph || { nodes: [], edges: [] });
       setRecommendationItems(result.recommendations || []);
       setActiveMode('recommendations');
+      setActiveTab('recomendar');
     } catch (error) {
       console.error(error);
       alert('No se pudieron cargar las recomendaciones');
@@ -175,6 +188,7 @@ function App() {
       const result = await response.json();
       setGraphData(applyComplementaFilters(result, filters));
       setActiveMode('complementa');
+      setActiveTab('recomendar');
     } catch (error) {
       console.error(error);
       alert('No se pudo cargar el modo Complementa');
@@ -198,6 +212,7 @@ function App() {
 
       await loadInitialData();
       setActiveMode('explore');
+      setActiveTab('gestionar');
       alert('Tecnología creada y grafo actualizado.');
       return true;
     } catch (error) {
@@ -227,69 +242,77 @@ function App() {
 
       <div className="mode-bar">
         <button
-          className={activeMode === 'explore' ? 'mode-btn active' : 'mode-btn'}
+          className={activeTab === 'explorar' ? 'mode-btn active' : 'mode-btn'}
           onClick={resetGraph}
         >
           Explorar
         </button>
         <button
-          className={activeMode === 'path' ? 'mode-btn active' : 'mode-btn'}
-          onClick={() => setActiveMode('path')}
+          className={activeTab === 'recomendar' ? 'mode-btn active' : 'mode-btn'}
+          onClick={() => setActiveTab('recomendar')}
         >
-          Caminos
+          Recomendar
         </button>
         <button
-          className={activeMode === 'recommendations' ? 'mode-btn active' : 'mode-btn'}
-          onClick={() => setActiveMode('recommendations')}
+          className={activeTab === 'gestionar' ? 'mode-btn active' : 'mode-btn'}
+          onClick={() => setActiveTab('gestionar')}
         >
-          Recomendaciones
-        </button>
-        <button
-          className={activeMode === 'complementa' ? 'mode-btn active' : 'mode-btn'}
-          onClick={handleComplementaLoaded}
-        >
-          Complementa
-        </button>
-        <button
-          className={activeMode === 'analytics' ? 'mode-btn active' : 'mode-btn'}
-          onClick={() => setActiveMode('analytics')}
-        >
-          Analytics
+          Gestionar
         </button>
       </div>
 
       <main className="layout">
         <aside className="left-column">
-          <FilterPanel
-            selectedFilter={selectedFilter}
-            onFilterChange={setSelectedFilter}
-            onlyBridgeNodes={onlyBridgeNodes}
-            onToggleBridgeNodes={setOnlyBridgeNodes}
-          />
+          {activeTab === 'explorar' && (
+            <>
+              <CollapsiblePanel title="Filtros" subtitle="Exploración visual" defaultOpen>
+                <FilterPanel
+                  selectedFilter={selectedFilter}
+                  onFilterChange={setSelectedFilter}
+                  onlyBridgeNodes={onlyBridgeNodes}
+                  onToggleBridgeNodes={setOnlyBridgeNodes}
+                />
+              </CollapsiblePanel>
 
-          <PathFinderPanel
-            nodes={baseGraphData.nodes}
-            onFindPath={handlePathLoaded}
-            onReset={resetGraph}
-          />
+              <CollapsiblePanel title="Camino más corto" subtitle="Explora conexiones" defaultOpen>
+                <PathFinderPanel
+                  nodes={baseGraphData.nodes}
+                  onFindPath={handlePathLoaded}
+                  onReset={resetGraph}
+                />
+              </CollapsiblePanel>
+            </>
+          )}
 
-          <RecommendationPanel
-            onLoadRecommendations={handleRecommendationsLoaded}
-            onReset={resetGraph}
-            recommendations={recommendationItems}
-          />
+          {activeTab === 'recomendar' && (
+            <>
+              <CollapsiblePanel title="Recomendaciones" subtitle="Ranking por tema" defaultOpen>
+                <RecommendationPanel
+                  onLoadRecommendations={handleRecommendationsLoaded}
+                  onReset={resetGraph}
+                  recommendations={recommendationItems}
+                />
+              </CollapsiblePanel>
 
-          <ComplementaPanel
-            onLoadComplementa={handleComplementaLoaded}
-            onReset={resetGraph}
-            nodes={baseGraphData.nodes}
-            edges={baseGraphData.edges}
-          />
+              <CollapsiblePanel title="Complementa" subtitle="Relaciones complementarias" defaultOpen>
+                <ComplementaPanel
+                  onLoadComplementa={handleComplementaLoaded}
+                  onReset={resetGraph}
+                  nodes={baseGraphData.nodes}
+                  edges={baseGraphData.edges}
+                />
+              </CollapsiblePanel>
+            </>
+          )}
 
-          <CreateTechnologyPanel
-            nodes={baseGraphData.nodes}
-            onCreateTechnology={handleCreateTechnology}
-          />
+          {activeTab === 'gestionar' && (
+            <CollapsiblePanel title="Nueva tecnología" subtitle="Alta y conexiones" defaultOpen>
+              <CreateTechnologyPanel
+                nodes={baseGraphData.nodes}
+                onCreateTechnology={handleCreateTechnology}
+              />
+            </CollapsiblePanel>
+          )}
         </aside>
 
         <section className="center-column">
