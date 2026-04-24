@@ -1,7 +1,7 @@
 # Manual de Instalación y Despliegue
 
 ## 1. Objetivo
-Este manual describe cómo preparar el entorno, instalar dependencias, configurar Neo4j y arrancar la aplicación completa (backend + frontend) del proyecto PROYECTO_CBD.
+Este manual describe cómo preparar el entorno, instalar dependencias, configurar Neo4j y arrancar la aplicación completa (backend + frontend) del proyecto TechGraph-Explorer.
 
 ## 2. Requisitos previos
 - Windows, Linux o macOS
