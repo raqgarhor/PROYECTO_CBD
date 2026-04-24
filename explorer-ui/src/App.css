@@ -27,7 +27,7 @@ body {
 
 .topbar {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 220px 1fr;
   gap: 20px;
   align-items: center;
   margin-bottom: 18px;
@@ -36,32 +36,29 @@ body {
 .brand-box {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
+  max-width: fit-content;
 }
 
-.brand-logo {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%);
-  box-shadow: 0 18px 32px rgba(79, 70, 229, 0.35);
-  font-size: 24px;
-  font-weight: 800;
+.brand-logo-img {
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border-radius: 6px;
 }
 
 .brand-box h1 {
   margin: 0;
-  font-size: 28px;
+  font-size: 26px;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 .brand-box p {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   color: #94a3b8;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .topbar-search {
@@ -247,7 +244,5 @@ body {
     grid-template-columns: 1fr;
   }
 
-  .brand-box h1 {
-    font-size: 22px;
-  }
+
 }
