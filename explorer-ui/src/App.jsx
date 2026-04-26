@@ -7,6 +7,7 @@ import FilterPanel from './components/FilterPanel';
 import DashboardStats from './components/DashboardStats';
 import PathFinderPanel from './components/PathFinderPanel';
 import RecommendationPanel from './components/RecommendationPanel';
+import DescriptionRecommendationPanel from './components/DescriptionRecommendationPanel';
 import ComplementaPanel from './components/ComplementaPanel';
 import AnalyticsPanel from './components/AnalyticsPanel';
 import CreateTechnologyPanel from './components/CreateTechnologyPanel';
@@ -37,6 +38,7 @@ function App() {
   const [activeMode, setActiveMode] = useState('explore');
   const [activeTab, setActiveTab] = useState('explorar');
   const [recommendationItems, setRecommendationItems] = useState([]);
+  const [descriptionLoading, setDescriptionLoading] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/immutability
@@ -127,6 +129,32 @@ function App() {
     } catch (error) {
       console.error(error);
       alert('No se pudieron cargar las recomendaciones');
+    }
+  };
+
+  const handleDescriptionRecommendationsLoaded = async (description) => {
+    try {
+      setDescriptionLoading(true);
+      const response = await fetch(`${API_URL}/recommendations-by-description`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ description })
+      });
+      if (!response.ok) {
+        throw new Error('No se pudieron cargar recomendaciones');
+      }
+      const result = await response.json();
+      setGraphData(result.graph || { nodes: [], edges: [] });
+      setRecommendationItems(result.recommendations || []);
+      setActiveMode('recommendations');
+      setActiveTab('recomendar');
+    } catch (error) {
+      console.error(error);
+      alert('No se pudieron cargar las recomendaciones');
+    } finally {
+      setDescriptionLoading(false);
     }
   };
 
@@ -299,6 +327,15 @@ function App() {
                   onLoadRecommendations={handleRecommendationsLoaded}
                   onReset={resetGraph}
                   recommendations={recommendationItems}
+                />
+              </CollapsiblePanel>
+
+              <CollapsiblePanel title="Recomendaciones por Descripción" subtitle="Basadas en tu proyecto" defaultOpen>
+                <DescriptionRecommendationPanel
+                  onLoadRecommendations={handleDescriptionRecommendationsLoaded}
+                  onReset={resetGraph}
+                  recommendations={recommendationItems}
+                  loading={descriptionLoading}
                 />
               </CollapsiblePanel>
 

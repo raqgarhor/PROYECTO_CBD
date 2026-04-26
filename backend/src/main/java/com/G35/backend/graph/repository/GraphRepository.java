@@ -490,4 +490,34 @@ public class GraphRepository {
             return result.list(record -> record.get("result").asMap());
         }
     }
+
+    public List<Map<String, Object>> getAllTechnologiesWithContext() {
+        try (Session session = driver.session()) {
+            Result result = session.run("""
+                    MATCH (t:Tech)
+                    OPTIONAL MATCH (t)-[:VISTO_EN]->(tema:Tema)
+                    WITH t, collect(DISTINCT coalesce(tema.nombre, tema.id)) AS temas
+
+                    OPTIONAL MATCH (t)-[r]-(relacionada:Tech)
+                    WITH t,
+                         temas,
+                         collect(DISTINCT type(r)) AS relaciones,
+                         collect(DISTINCT coalesce(relacionada.nombre, relacionada.id)) AS tecnologiasRelacionadas,
+                         count(DISTINCT r) AS degree
+
+                    RETURN {
+                      id: coalesce(t.nombre, t.id),
+                      nombre: coalesce(t.nombre, t.id),
+                      categoria: coalesce(t.categoria, 'Tech'),
+                      descripcion: coalesce(t.descripcion, ''),
+                      temas: temas,
+                      relaciones: relaciones,
+                      tecnologiasRelacionadas: tecnologiasRelacionadas,
+                      degree: degree
+                    } AS tech
+                    """);
+
+            return result.list(record -> record.get("tech").asMap());
+        }
+    }
 }

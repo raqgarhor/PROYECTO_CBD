@@ -5,10 +5,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.G35.backend.graph.dto.AnalyticsDTO;
+import com.G35.backend.graph.dto.DescriptionRequestDTO;
 import com.G35.backend.graph.dto.GraphResponseDTO;
 import com.G35.backend.graph.dto.PathResultDTO;
 import com.G35.backend.graph.dto.RecommendationResponseDTO;
 import com.G35.backend.graph.service.GraphService;
+import com.G35.backend.graph.service.RecommendationByDescriptionService;
 
 @RestController
 @RequestMapping("/api/graph")
@@ -16,6 +18,9 @@ public class GraphController {
 
     @Autowired
     private GraphService graphService;
+
+    @Autowired
+    private RecommendationByDescriptionService recommendationService;
 
     @GetMapping
     public ResponseEntity<GraphResponseDTO> getFullGraph() {
@@ -47,6 +52,12 @@ public class GraphController {
     @GetMapping("/recommendations")
     public ResponseEntity<RecommendationResponseDTO> getRecommendations(@RequestParam String temaId) {
         return ResponseEntity.ok(graphService.getRecommendations(temaId));
+    }
+
+    @PostMapping("/recommendations-by-description")
+    public ResponseEntity<RecommendationResponseDTO> getRecommendationsByDescription(
+            @RequestBody DescriptionRequestDTO request) {
+        return ResponseEntity.ok(recommendationService.getRecommendationsByDescription(request.getDescription()));
     }
 
     @GetMapping("/complementa")
