@@ -46,7 +46,12 @@ Funcionalidades principales:
 - ver ranking con score y razones
 - visualizar subgrafo recomendado
 
-2. Complementa:
+2. Recomendaciones por descripción de un proyecto
+  - introducir una descripción de un proyecto
+  - ver ranking con score y razones
+  - visualizar subgrafo recomendado
+    
+3. Complementa:
 - explorar relaciones `COMPLEMENTA`
 - usar tecnología foco para filtrar
 
