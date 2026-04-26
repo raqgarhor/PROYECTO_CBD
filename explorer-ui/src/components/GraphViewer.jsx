@@ -42,7 +42,6 @@ const GraphViewer = ({
 }) => {
   const containerRef = useRef(null);
   const cyRef = useRef(null);
-  const positionsRef = useRef(null);
   const isFirstLoadRef = useRef(true);
   const selectedNodeRef = useRef(null);
   const selectedNodeIdRef = useRef(null);
@@ -85,17 +84,10 @@ const GraphViewer = ({
     if (!containerRef.current) return;
 
     if (cyRef.current) {
-      if (cyRef.current.elements().length > 0) {
-        const positions = {};
-        cyRef.current.nodes().forEach(node => {
-          positions[node.id()] = { x: node.position('x'), y: node.position('y') };
-        });
-        positionsRef.current = positions;
-        
-        if (selectedNodeRef.current) {
-          selectedNodeIdRef.current = selectedNodeRef.current.id();
-        }
+      if (selectedNodeRef.current) {
+        selectedNodeIdRef.current = selectedNodeRef.current.id();
       }
+
       cyRef.current.destroy();
       cyRef.current = null;
     }
@@ -107,14 +99,14 @@ const GraphViewer = ({
         name: 'cose',
         animate: isFirstLoadRef.current ? 'end' : false,
         animationDuration: 800,
-        fit: isFirstLoadRef.current,
+        fit: true,
         padding: 48,
-        nodeRepulsion: 900000,
-        idealEdgeLength: 130,
-        edgeElasticity: 100,
-        gravity: 0.25,
-        numIter: isFirstLoadRef.current ? 1600 : 0,
-        randomize: false
+        nodeRepulsion: 1200000,
+        idealEdgeLength: 160,
+        edgeElasticity: 90,
+        gravity: 0.15,
+        numIter: 1800,
+        randomize: true
       },
       minZoom: 0.05,
       maxZoom: 2.5,
@@ -123,17 +115,17 @@ const GraphViewer = ({
         {
           selector: 'node',
           style: {
-            'label': 'data(label)',
+            label: 'data(label)',
             'text-wrap': 'wrap',
             'text-max-width': 96,
             'text-valign': 'center',
             'text-halign': 'center',
             'font-size': 11,
             'font-weight': 700,
-            'color': '#e5eefc',
+            color: '#e5eefc',
             'background-color': ele => CATEGORY_COLORS[ele.data('category')] || '#64748b',
-            'width': 'mapData(connections, 1, 12, 34, 78)',
-            'height': 'mapData(connections, 1, 12, 34, 78)',
+            width: 'mapData(connections, 1, 12, 34, 78)',
+            height: 'mapData(connections, 1, 12, 34, 78)',
             'border-width': 2,
             'border-color': '#e2e8f033',
             'overlay-opacity': 0,
@@ -178,31 +170,31 @@ const GraphViewer = ({
         {
           selector: 'node.faded',
           style: {
-            'opacity': 0.12
+            opacity: 0.12
           }
         },
         {
           selector: 'edge',
           style: {
             'curve-style': 'bezier',
-            'width': 'mapData(weight, 1, 2, 2, 4)',
+            width: 'mapData(weight, 1, 2, 2, 4)',
             'line-color': '#7dd3fc55',
             'target-arrow-color': '#7dd3fc55',
             'target-arrow-shape': 'triangle',
-            'opacity': 0.7
+            opacity: 0.7
           }
         },
         {
           selector: 'edge.faded',
           style: {
-            'opacity': 0.05
+            opacity: 0.05
           }
         },
         {
           selector: 'edge.highlighted',
           style: {
-            'opacity': 1,
-            'width': 4,
+            opacity: 1,
+            width: 4,
             'line-color': '#93c5fd',
             'target-arrow-color': '#93c5fd'
           }
@@ -246,6 +238,7 @@ const GraphViewer = ({
           selectedNodeRef.current = null;
           selectedNodeIdRef.current = null;
         }
+
         cy.elements().removeClass('faded highlighted');
         onNodeSelect(null);
       }
@@ -255,28 +248,16 @@ const GraphViewer = ({
 
     setTimeout(() => {
       cy.resize();
-      
-      if (isFirstLoadRef.current) {
-        cy.fit(undefined, 50);
-        cy.center();
-        cy.zoom(0.1);
-      } else {
-        cy.nodes().forEach(node => {
-          const savedPos = positionsRef.current?.[node.id()];
-          if (savedPos) {
-            node.position(savedPos);
-          }
-        });
-      }
-      
+
       if (selectedNodeIdRef.current) {
         const nodeToSelect = cy.getElementById(selectedNodeIdRef.current);
+
         if (nodeToSelect && nodeToSelect.length > 0) {
           nodeToSelect.addClass('node-kept-selected');
           selectedNodeRef.current = nodeToSelect;
         }
       }
-      
+
       isFirstLoadRef.current = false;
     }, 120);
 
@@ -290,10 +271,23 @@ const GraphViewer = ({
     if (!cy) return;
 
     const term = searchTerm.trim().toLowerCase();
-    const hasSearchFilter = term || filterCategory !== 'all' || onlyBridgeNodes || highlightMode === 'analytics';
+
+    const hasSearchFilter =
+      term ||
+      filterCategory !== 'all' ||
+      onlyBridgeNodes ||
+      highlightMode === 'analytics';
 
     if (!hasSearchFilter) {
       cy.elements().removeClass('faded highlighted');
+      cy.animate({
+        fit: {
+          eles: cy.elements(),
+          padding: 70
+        },
+        duration: 400,
+        easing: 'ease-in-out'
+      });
       return;
     }
 
@@ -313,11 +307,15 @@ const GraphViewer = ({
     }
 
     if (onlyBridgeNodes) {
-      matchedNodes = matchedNodes.filter((node) => node.data('isPuente') === true);
+      matchedNodes = matchedNodes.filter(
+        (node) => node.data('isPuente') === true
+      );
     }
 
     if (highlightMode === 'analytics') {
-      matchedNodes = matchedNodes.filter((node) => node.data('isPuente') === true || node.data('connections') >= 4);
+      matchedNodes = matchedNodes.filter(
+        (node) => node.data('isPuente') === true || node.data('connections') >= 4
+      );
     }
 
     cy.elements().removeClass('highlighted').addClass('faded');
@@ -327,6 +325,21 @@ const GraphViewer = ({
       node.connectedEdges().removeClass('faded').addClass('highlighted');
       node.neighborhood().removeClass('faded');
     });
+
+    if (matchedNodes.length > 0) {
+      setTimeout(() => {
+        const elesToFit = matchedNodes.union(matchedNodes.connectedEdges());
+
+        cy.animate({
+          fit: {
+            eles: elesToFit,
+            padding: 90
+          },
+          duration: 500,
+          easing: 'ease-in-out'
+        });
+      }, 100);
+    }
   }, [searchTerm, filterCategory, onlyBridgeNodes, highlightMode]);
 
   return (

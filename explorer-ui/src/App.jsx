@@ -37,7 +37,8 @@ function App() {
   const [analytics, setAnalytics] = useState(null);
   const [activeMode, setActiveMode] = useState('explore');
   const [activeTab, setActiveTab] = useState('explorar');
-  const [recommendationItems, setRecommendationItems] = useState([]);
+  const [themeRecommendationItems, setThemeRecommendationItems] = useState([]);
+  const [descriptionRecommendationItems, setDescriptionRecommendationItems] = useState([]);
   const [descriptionLoading, setDescriptionLoading] = useState(false);
 
   useEffect(() => {
@@ -74,7 +75,8 @@ function App() {
     setGraphData(baseGraphData);
     setActiveMode('explore');
     setActiveTab('explorar');
-    setRecommendationItems([]);
+    setThemeRecommendationItems([]);
+    setDescriptionRecommendationItems([]);
   };
 
   const handleNodeSelect = async (nodeData) => {
@@ -113,50 +115,61 @@ function App() {
     }
   };
 
-  const handleRecommendationsLoaded = async (temaId) => {
-    try {
-      const response = await fetch(
-        `${API_URL}/recommendations?temaId=${encodeURIComponent(temaId)}`
-      );
-      if (!response.ok) {
-        throw new Error('No se pudieron cargar recomendaciones');
-      }
-      const result = await response.json();
-      setGraphData(result.graph || { nodes: [], edges: [] });
-      setRecommendationItems(result.recommendations || []);
-      setActiveMode('recommendations');
-      setActiveTab('recomendar');
-    } catch (error) {
-      console.error(error);
-      alert('No se pudieron cargar las recomendaciones');
-    }
-  };
+const handleRecommendationsLoaded = async (temaId) => {
+  try {
+    const response = await fetch(
+      `${API_URL}/recommendations?temaId=${encodeURIComponent(temaId)}`
+    );
 
-  const handleDescriptionRecommendationsLoaded = async (description) => {
-    try {
-      setDescriptionLoading(true);
-      const response = await fetch(`${API_URL}/recommendations-by-description`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ description })
-      });
-      if (!response.ok) {
-        throw new Error('No se pudieron cargar recomendaciones');
-      }
-      const result = await response.json();
-      setGraphData(result.graph || { nodes: [], edges: [] });
-      setRecommendationItems(result.recommendations || []);
-      setActiveMode('recommendations');
-      setActiveTab('recomendar');
-    } catch (error) {
-      console.error(error);
-      alert('No se pudieron cargar las recomendaciones');
-    } finally {
-      setDescriptionLoading(false);
+    if (!response.ok) {
+      throw new Error('No se pudieron cargar recomendaciones');
     }
-  };
+
+    const result = await response.json();
+
+    setGraphData(result.graph || { nodes: [], edges: [] });
+    setThemeRecommendationItems(result.recommendations || []);
+    setDescriptionRecommendationItems([]);
+
+    setActiveMode('recommendations');
+    setActiveTab('recomendar');
+  } catch (error) {
+    console.error(error);
+    alert('No se pudieron cargar las recomendaciones');
+  }
+};
+
+const handleDescriptionRecommendationsLoaded = async (description) => {
+  setDescriptionLoading(true);
+
+  try {
+    const response = await fetch(`${API_URL}/recommendations-by-description`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ description }),
+    });
+
+    if (!response.ok) {
+      throw new Error('No se pudieron cargar recomendaciones por descripción');
+    }
+
+    const result = await response.json();
+
+    setGraphData(result.graph || { nodes: [], edges: [] });
+    setDescriptionRecommendationItems(result.recommendations || []);
+    setThemeRecommendationItems([]);
+
+    setActiveMode('recommendations-description');
+    setActiveTab('recomendar');
+  } catch (error) {
+    console.error(error);
+    alert('No se pudieron cargar las recomendaciones por descripción');
+  } finally {
+    setDescriptionLoading(false);
+  }
+};
 
   const applyComplementaFilters = (graph, filters = {}) => {
     const nodes = Array.isArray(graph?.nodes) ? graph.nodes : [];
@@ -326,7 +339,7 @@ function App() {
                   nodes={baseGraphData.nodes}
                   onLoadRecommendations={handleRecommendationsLoaded}
                   onReset={resetGraph}
-                  recommendations={recommendationItems}
+                  recommendations={themeRecommendationItems}
                 />
               </CollapsiblePanel>
 
@@ -334,7 +347,7 @@ function App() {
                 <DescriptionRecommendationPanel
                   onLoadRecommendations={handleDescriptionRecommendationsLoaded}
                   onReset={resetGraph}
-                  recommendations={recommendationItems}
+                  recommendations={descriptionRecommendationItems}
                   loading={descriptionLoading}
                 />
               </CollapsiblePanel>

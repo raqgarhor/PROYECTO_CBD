@@ -53,7 +53,7 @@ const DescriptionRecommendationPanel = ({ onLoadRecommendations, onReset, recomm
           {loading ? 'Buscando...' : 'Buscar Tecnologías'}
         </button>
         <button className="secondary-btn" onClick={onReset}>
-          Limpiar
+          Reset
         </button>
       </div>
 
