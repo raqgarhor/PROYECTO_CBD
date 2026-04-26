@@ -1,15 +1,23 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import '../styles/ToolPanel.css';
 
-const RecommendationPanel = ({ nodes = [], onLoadRecommendations, onReset, recommendations = [] }) => {
+const RecommendationPanel = ({
+  nodes = [],
+  onLoadRecommendations,
+  onReset,
+  recommendations = []
+}) => {
   const [selectedTheme, setSelectedTheme] = useState('');
 
   const themes = useMemo(() => {
-    // Filtrar temas del grafo
     const data = (nodes || []).map((node) => node?.data ?? node);
+
     return data
       .filter((item) => item?.category === 'Tema')
-      .map((item) => ({ id: item.id, label: item.label }))
+      .map((item) => ({
+        id: item.id,
+        label: item.label
+      }))
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [nodes]);
 
@@ -27,6 +35,7 @@ const RecommendationPanel = ({ nodes = [], onLoadRecommendations, onReset, recom
         onChange={(e) => setSelectedTheme(e.target.value)}
       >
         <option value="">Selecciona un tema</option>
+
         {themes.map((theme) => (
           <option key={theme.id} value={theme.id}>
             {theme.label}
@@ -42,6 +51,7 @@ const RecommendationPanel = ({ nodes = [], onLoadRecommendations, onReset, recom
         >
           Ver recomendaciones
         </button>
+
         <button className="secondary-btn" onClick={onReset}>
           Reset
         </button>
@@ -50,6 +60,7 @@ const RecommendationPanel = ({ nodes = [], onLoadRecommendations, onReset, recom
       {recommendations.length > 0 && (
         <div className="analytics-section" style={{ marginTop: '0.8rem' }}>
           <h4>Top recomendadas</h4>
+
           <div className="analytics-list">
             {recommendations.slice(0, 5).map((item) => (
               <div key={item.id} className="analytics-item">
@@ -58,6 +69,7 @@ const RecommendationPanel = ({ nodes = [], onLoadRecommendations, onReset, recom
                   <small>{item.categoria}</small>
                   <small>{(item.razones || []).slice(0, 2).join(' · ')}</small>
                 </div>
+
                 <span>{Number(item.score || 0).toFixed(1)}</span>
               </div>
             ))}

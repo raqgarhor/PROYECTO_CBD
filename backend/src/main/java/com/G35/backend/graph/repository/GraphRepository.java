@@ -213,34 +213,32 @@ public class GraphRepository {
         try (Session session = driver.session()) {
             Result result = session.run(
                     """
-                            MATCH (tema:Tema {id: $temaId})<-[:VISTO_EN]-(tech:Tech)
+                            MATCH (tema:Tema)<-[:VISTO_EN]-(tech:Tech)
+                            WHERE tema.id = $temaId OR tema.nombre = $temaId
                             OPTIONAL MATCH (tech)-[:SE_INTEGRA_CON]-(integrated:Tech)
                             WITH tema, tech, count(DISTINCT integrated) AS integrationsCount
                             OPTIONAL MATCH (tech)-[:COMPLEMENTA]-(complementary:Tech)
                             WITH tema, tech, integrationsCount, count(DISTINCT complementary) AS complementaCount
                             OPTIONAL MATCH (tech)-[:VISTO_EN]->(otherTema:Tema)
                             WITH tema, tech, integrationsCount, complementaCount, count(DISTINCT otherTema) AS temasCount
-                            WITH tech,
-                                 integrationsCount,
-                                 complementaCount,
-                                 temasCount,
+                            WITH tech, integrationsCount, complementaCount, temasCount,
                                  (
-                                     10.0 +
-                                     (integrationsCount * 2.0) +
-                                     (complementaCount * 1.5) +
-                                     CASE WHEN temasCount > 1 THEN 1.0 ELSE 0.0 END
+                                   10.0 +
+                                   (integrationsCount * 2.0) +
+                                   (complementaCount * 1.5) +
+                                   CASE WHEN temasCount > 1 THEN 1.0 ELSE 0.0 END
                                  ) AS score
                             RETURN {
-                                id: CASE WHEN tech.nombre IS NOT NULL THEN tech.nombre ELSE tech.id END,
-                                nombre: CASE WHEN tech.nombre IS NOT NULL THEN tech.nombre ELSE tech.id END,
-                                categoria: coalesce(tech.categoria, 'Tech'),
-                                score: score,
-                                razones: [
-                                    'Pertenece al tema seleccionado',
-                                    'Se integra con ' + toString(integrationsCount) + ' tecnologías',
-                                    'Tiene ' + toString(complementaCount) + ' relaciones COMPLEMENTA',
-                                    'Aparece en ' + toString(temasCount) + ' tema(s)'
-                                ]
+                              id: CASE WHEN tech.nombre IS NOT NULL THEN tech.nombre ELSE tech.id END,
+                              nombre: CASE WHEN tech.nombre IS NOT NULL THEN tech.nombre ELSE tech.id END,
+                              categoria: coalesce(tech.categoria, 'Tech'),
+                              score: score,
+                              razones: [
+                                'Pertenece al tema seleccionado',
+                                'Se integra con ' + toString(integrationsCount) + ' tecnologías',
+                                'Tiene ' + toString(complementaCount) + ' relaciones COMPLEMENTA',
+                                'Aparece en ' + toString(temasCount) + ' tema(s)'
+                              ]
                             } AS result
                             ORDER BY result.score DESC
                             LIMIT 10
@@ -471,6 +469,25 @@ public class GraphRepository {
                     } AS result
                     """, Map.of("nombre", nombre, "descripcion", descripcion));
             return result.single().get("result").asMap();
+        }
+    }
+
+    public List<Map<String, Object>> getAllTechnologies() {
+        try (Session session = driver.session()) {
+            Result result = session.run("""
+                    MATCH (t:Tech)
+                    OPTIONAL MATCH (t)-[r]-()
+                    WITH t, count(DISTINCT r) AS degree
+                    RETURN {
+                        id: t.nombre,
+                        nombre: t.nombre,
+                        categoria: coalesce(t.categoria, 'Sin categoría'),
+                        descripcion: coalesce(t.descripcion, ''),
+                        degree: degree
+                    } AS result
+                    ORDER BY t.nombre
+                    """);
+            return result.list(record -> record.get("result").asMap());
         }
     }
 }
